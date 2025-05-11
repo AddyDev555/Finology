@@ -6,6 +6,7 @@ import {
     TextInput,
     Button,
     Alert,
+    Image,
     TouchableOpacity,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -31,7 +32,7 @@ export default function LoginForm({ navigation }) {
             await AsyncStorage.setItem('user', JSON.stringify({ username, password }));
             Alert.alert('Login Success', 'Welcome, ' + username);
             setIsFirstTime(false);
-            navigation.replace("Home");
+            // navigation.replace("Home");
         } else {
             Alert.alert('Error', 'Please fill all fields');
         }
@@ -48,36 +49,79 @@ export default function LoginForm({ navigation }) {
         }
     };
 
+    const handleLogout = async () => {
+        await AsyncStorage.removeItem('user');
+        setUsername('');
+        setPassword('');
+        setIsFirstTime(true);
+        Alert.alert('Logged out', 'You have been logged out successfully.');
+    };
+
+    const signUpNavigation = () => {
+        navigation.navigate('Signup');
+        setIsFirstTime(true);
+    };
+
     return (
         <View style={styles.container}>
-            <Text style={styles.title}>{isFirstTime ? "First-Time Login" : "Enter Password to Continue"}</Text>
+            {/* <View style={isFirstTime ? styles.logoContainer : styles.logoLeftContainer}>
+                <Image source={require('../../assets/Logo.png')} style={styles.logo} />
+                <Text style={styles.logoTitle}>Finology</Text>
+            </View> */}
 
             {isFirstTime && (
-                <TextInput
-                    placeholder="Enter username/phone/email"
-                    style={styles.input}
-                    placeholderTextColor="#777"
-                    onChangeText={setUsername}
-                />
+                <>
+                    <Text style={styles.title}>Login</Text>
+                    <TextInput
+                        placeholder="Enter phone-number"
+                        style={styles.input}
+                        placeholderTextColor="#777"
+                        onChangeText={setUsername}
+                    />
+                    <TextInput
+                        placeholder="Enter Password"
+                        style={styles.input}
+                        placeholderTextColor="#777"
+                        secureTextEntry
+                        keyboardType="numeric"
+                        onChangeText={setPassword}
+                    />
+                    <TouchableOpacity style={styles.button} onPress={handleFirstLogin}>
+                        <Text style={styles.buttonText}>Login</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity style={styles.NavText} onPress={signUpNavigation}>
+                        <Text style={styles.NavText}>don't have an account? Signup</Text>
+                    </TouchableOpacity>
+                </>
             )}
 
-            <TextInput
-                placeholder={isFirstTime ? "Create Password" : "Password"}
-                style={styles.input}
-                placeholderTextColor="#777"
-                secureTextEntry
-                keyboardType="numeric"
-                onChangeText={setPassword}
-            />
+            {!isFirstTime && (
+                <>
+                    <TextInput
+                        placeholder="Enter Password"
+                        style={styles.input}
+                        placeholderTextColor="#777"
+                        secureTextEntry
+                        keyboardType="number-pad"
+                        onChangeText={setPassword}
+                    />
+                    <TouchableOpacity style={styles.button} onPress={handlePasswordCheck}>
+                        <Text style={styles.buttonText}>Unlock</Text>
+                    </TouchableOpacity>
 
-            <TouchableOpacity
-                style={styles.button}
-                onPress={isFirstTime ? handleFirstLogin : handlePasswordCheck}
-            >
-                <Text style={styles.buttonText}>{isFirstTime ? "Login" : "Unlock"}</Text>
-            </TouchableOpacity>
+                    {/* Logout button */}
+                    <TouchableOpacity
+                        style={[styles.button, { backgroundColor: '#FF6B6B', marginTop: 10 }]}
+                        onPress={handleLogout}
+                    >
+                        <Text style={styles.buttonText}>Logout</Text>
+                    </TouchableOpacity>
+                </>
+            )}
+
         </View>
     );
+
 }
 
 const styles = StyleSheet.create({
@@ -87,6 +131,34 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
         paddingHorizontal: 30,
+    },
+    logoContainer: {
+        position: 'absolute',
+        top: 50,
+        left: 20,
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+
+    logoLeftContainer: {
+        width: '100%',
+        position: 'relative',
+        left: 0,
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    logo: {
+        width: 40,
+        height: 40,
+        marginBottom: 20,
+    },
+    logoTitle: {
+        fontSize: 30,
+        fontWeight: 'bold',
+        color: 'black',
+        marginLeft: 5,
+        position: 'relative',
+        bottom: 10,
     },
     title: {
         fontSize: 24,
@@ -125,5 +197,11 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         fontSize: 16,
         letterSpacing: 1,
+    },
+    NavText: {
+        marginTop: 10,
+        color: '#4B0082',
+        fontSize: 16,
+        textDecorationLine: 'underline',
     },
 });

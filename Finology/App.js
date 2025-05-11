@@ -7,6 +7,8 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import Home from './components/pages/Home';
 import Login from './components/pages/Login';
+import Signup from './components/pages/Signup';
+import Toast from 'react-native-toast-message';
 
 export default function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -21,13 +23,17 @@ export default function App() {
   const Stack = createStackNavigator();
 
   return (
-    <NavigationContainer>
-      <Stack.Navigator initialRouteName={isLoggedIn ? "Home" : "Login"}>
-        <Stack.Screen name="Home" component={Home}  options={{ headerShown: false }}/>
-        <Stack.Screen name="Login" component={Login}  options={{ headerShown: false }}/>
-      </Stack.Navigator>
+    <View style={{ flex: 1 }}>
+      <Toast />
+      <NavigationContainer>
+        <Stack.Navigator initialRouteName={isLoggedIn ? "Home" : "Login"}>
+          <Stack.Screen name="Home" component={Home} options={{ headerShown: false }} />
+          <Stack.Screen name="Login" component={Login} options={{ headerShown: false }} />
+          <Stack.Screen name="Signup" component={Signup} options={{ headerShown: false }} />
+        </Stack.Navigator>
+      </NavigationContainer>
       <StatusBar style="auto" />
-    </NavigationContainer>
+    </View>
   );
 }
 

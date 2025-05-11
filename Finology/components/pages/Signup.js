@@ -1,11 +1,10 @@
 import { StyleSheet, Text, View } from 'react-native'
 import React from 'react'
-import LoginForm from '../auth/login-form'
-
-export default function Login({navigation}) {
+import SignupForm from '../auth/signup-form'
+export default function Signup() {
     return (
         <View style={styles.container}>
-            <LoginForm navigation={navigation}/>
+            <SignupForm />
         </View>
     )
 }
@@ -13,6 +12,7 @@ export default function Login({navigation}) {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-
-    }
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
 })
