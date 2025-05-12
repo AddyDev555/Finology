@@ -15,6 +15,12 @@ export default function SignupForm() {
 
     const handleSignup = () => {
         let errors = {};
+        const FormPayload = {
+            "username": username,
+            "email": email,
+            "phoneNumber": `${countryCode}${phoneNumber}`,
+            "password": password
+        }
 
         // Validate all fields
         if (!username) errors.username = "Username is required";
@@ -22,12 +28,25 @@ export default function SignupForm() {
         if (!phoneNumber) errors.phoneNumber = "Phone number is required";
         if (!password) errors.password = "Password is required";
 
+        const emailRegex = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/;
+        if (email && !emailRegex.test(email)) {
+            errors.email = "Invalid email format";
+        }
+
+        if (phoneNumber && phoneNumber.length !== 10) {
+            errors.phoneNumber = "Phone number must be 10 digits";
+        }
+
+        if (password && password.length !== 5) {
+            errors.password = "Password must be 5 characters long";
+        }
+
         // If there are errors, set them in state
         if (Object.keys(errors).length > 0) {
             setError(errors);
             Toast.show({
                 type: 'error',
-                position: 'bottom',
+                position: 'top',
                 text1: 'Error',
                 text2: 'Please fill in all the required fields.',
                 visibilityTime: 3000,
@@ -36,15 +55,48 @@ export default function SignupForm() {
             return;
         }
 
-        // If validation passes, show success
-        Toast.show({
-            type: 'success',
-            position: 'bottom',
-            text1: 'Success!',
-            text2: `Signed up with ${username}, ${email}, ${countryCode} ${phoneNumber}`,
-            visibilityTime: 3000,
-            autoHide: true,
-        });
+        fetch('http://192.168.0.100:5000/auth/signup', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(FormPayload),
+        })
+            .then(response => {
+                if (!response.ok) {
+                    Toast.show({
+                    type: 'error',
+                    position: 'top',
+                    text1: 'Failed!',
+                    text2: `${response.json().error}`,
+                    visibilityTime: 3000,
+                    autoHide: true,
+                });
+                }
+                Toast.show({
+                    type: 'success',
+                    position: 'top',
+                    text1: 'Success!',
+                    text2: `${response.json().message}`,
+                    visibilityTime: 3000,
+                    autoHide: true,
+                });
+
+                setError({});
+                setUsername('');
+                setEmail('');
+                setCountryCode('+91');
+                setPhoneNumber('');
+                setPassword('');
+
+                navigation.navigate('Login');
+            })
+            .then(data => {
+                console.log('Server response:', data);
+            })
+            .catch(error => {
+                console.error('Submission error:', error);
+            });
     };
 
     const loginNavigation = () => {
@@ -92,9 +144,10 @@ export default function SignupForm() {
                     keyboardType="phone-pad"
                     onChangeText={setPhoneNumber}
                     value={phoneNumber}
+                    maxLength={10}
                 />
             </View>
-            {error.phoneNumber && <Text style={styles.errorText}>{error.phoneNumber}</Text>} {/* Display error */}
+            {error.phoneNumber && <Text style={styles.errorText}>{error.phoneNumber}</Text>}
 
             <TextInput
                 placeholder="Password"
@@ -104,13 +157,13 @@ export default function SignupForm() {
                 keyboardType="numeric"
                 onChangeText={setPassword}
                 value={password}
+                maxLength={5}
             />
             {error.password && <Text style={styles.errorText}>{error.password}</Text>} {/* Display error */}
 
             <TouchableOpacity
-                style={[styles.button, (Object.keys(error).length > 0 && { opacity: 0.5 })]}
+                style={styles.button}
                 onPress={handleSignup}
-                disabled={Object.keys(error).length > 0}
             >
                 <Text style={styles.buttonText}>Sign Up</Text>
             </TouchableOpacity>

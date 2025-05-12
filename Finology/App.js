@@ -24,13 +24,13 @@ export default function App() {
 
   return (
     <View style={{ flex: 1 }}>
-      <Toast />
       <NavigationContainer>
         <Stack.Navigator initialRouteName={isLoggedIn ? "Home" : "Login"}>
           <Stack.Screen name="Home" component={Home} options={{ headerShown: false }} />
           <Stack.Screen name="Login" component={Login} options={{ headerShown: false }} />
           <Stack.Screen name="Signup" component={Signup} options={{ headerShown: false }} />
         </Stack.Navigator>
+        <Toast />
       </NavigationContainer>
       <StatusBar style="auto" />
     </View>

@@ -10,11 +10,15 @@ import {
     TouchableOpacity,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import Toast from 'react-native-toast-message';
+import { Picker } from '@react-native-picker/picker';
 
 export default function LoginForm({ navigation }) {
     const [isFirstTime, setIsFirstTime] = useState(true);
     const [password, setPassword] = useState('');
     const [username, setUsername] = useState('');
+    const [countryCode, setCountryCode] = useState('+91');
+    const [name, setName] = useState('');
 
     useEffect(() => {
         checkFirstLogin();
@@ -29,10 +33,61 @@ export default function LoginForm({ navigation }) {
 
     const handleFirstLogin = async () => {
         if (username && password) {
-            await AsyncStorage.setItem('user', JSON.stringify({ username, password }));
-            Alert.alert('Login Success', 'Welcome, ' + username);
-            setIsFirstTime(false);
-            // navigation.replace("Home");
+            const FormPayload = {
+                "phoneNumber": `${countryCode}${username}`,
+                "password": password
+            }
+            try {
+                const response = await fetch('http://192.168.0.100:5000/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(FormPayload),
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    Toast.show({
+                        type: 'error',
+                        position: 'top',
+                        text1: 'Failed!',
+                        text2: data.error || 'Login failed.',
+                        visibilityTime: 3000,
+                        autoHide: true,
+                    });
+                    return;
+                }
+
+                Toast.show({
+                    type: 'success',
+                    position: 'top',
+                    text1: `Success!, Welcome ${data.username}`,
+                    text2: data.message || 'Login successful!',
+                    visibilityTime: 3000,
+                    autoHide: true,
+                });
+
+                const name = data.username;
+                setName(name);
+
+                await AsyncStorage.setItem('user', JSON.stringify({ name, username, password }));
+                setIsFirstTime(false);
+
+                setUsername('');
+                setPassword('');
+            } catch (error) {
+                console.error('Submission error:', error);
+                Toast.show({
+                    type: 'error',
+                    position: 'top',
+                    text1: 'Network Error',
+                    text2: error.message,
+                    visibilityTime: 3000,
+                    autoHide: true,
+                });
+            }
         } else {
             Alert.alert('Error', 'Please fill all fields');
         }
@@ -42,7 +97,14 @@ export default function LoginForm({ navigation }) {
         const savedData = await AsyncStorage.getItem('user');
         const userData = JSON.parse(savedData);
         if (password === userData.password) {
-            Alert.alert('Access Granted', 'Welcome back, ' + userData.username);
+            Toast.show({
+                type: 'success',
+                position: 'top',
+                text1: 'Access Granted!',
+                text2: 'Welcome back, ' + userData.name,
+                visibilityTime: 3000,
+                autoHide: true,
+            });
             navigation.replace("Home");
         } else {
             Alert.alert('Access Denied', 'Wrong password');
@@ -72,12 +134,27 @@ export default function LoginForm({ navigation }) {
             {isFirstTime && (
                 <>
                     <Text style={styles.title}>Login</Text>
-                    <TextInput
-                        placeholder="Enter phone-number"
-                        style={styles.input}
-                        placeholderTextColor="#777"
-                        onChangeText={setUsername}
-                    />
+                    <View style={styles.phoneContainer}>
+                        <Picker
+                            selectedValue={countryCode}
+                            style={styles.picker}
+                            onValueChange={(itemValue) => setCountryCode(itemValue)}
+                        >
+                            <Picker.Item label="+91 🇮🇳" value="+91" />
+                            <Picker.Item label="+1 🇺🇸" value="+1" />
+                            <Picker.Item label="+44 🇬🇧" value="+44" />
+                            <Picker.Item label="+61 🇦🇺" value="+61" />
+                        </Picker>
+                        <TextInput
+                            placeholder="Phone Number"
+                            style={styles.phoneInput}
+                            placeholderTextColor="#777"
+                            keyboardType="phone-pad"
+                            onChangeText={setUsername}
+                            value={username}
+                            maxLength={10}
+                        />
+                    </View>
                     <TextInput
                         placeholder="Enter Password"
                         style={styles.input}
@@ -85,6 +162,7 @@ export default function LoginForm({ navigation }) {
                         secureTextEntry
                         keyboardType="numeric"
                         onChangeText={setPassword}
+                        maxLength={5}
                     />
                     <TouchableOpacity style={styles.button} onPress={handleFirstLogin}>
                         <Text style={styles.buttonText}>Login</Text>
@@ -104,6 +182,7 @@ export default function LoginForm({ navigation }) {
                         secureTextEntry
                         keyboardType="number-pad"
                         onChangeText={setPassword}
+                        maxLength={5}
                     />
                     <TouchableOpacity style={styles.button} onPress={handlePasswordCheck}>
                         <Text style={styles.buttonText}>Unlock</Text>
@@ -179,6 +258,27 @@ const styles = StyleSheet.create({
         shadowOffset: { width: 0, height: 2 },
         shadowRadius: 4,
         elevation: 3,
+    },
+    phoneContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        width: '100%',
+        backgroundColor: '#F2EDFF',
+        borderRadius: 10,
+        marginBottom: 10,
+        overflow: 'hidden',
+    },
+    picker: {
+        width: 129,
+        height: 50,
+        backgroundColor: '#F2EDFF',
+        borderRadius: 50,
+    },
+    phoneInput: {
+        flex: 1,
+        padding: 15,
+        fontSize: 16,
+        color: '#333',
     },
     button: {
         width: '100%',
