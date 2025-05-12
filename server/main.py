@@ -24,7 +24,11 @@ class User(db.Model):
 
 with app.app_context():
     db.create_all()
-    
+
+@app.route('/')
+def index():
+    return jsonify('Welcome to the Finology API Server!'), 200
+
 @app.route('/auth/signup', methods=['POST'])
 def create_user():
     data = request.get_json()

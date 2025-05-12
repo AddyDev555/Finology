@@ -1,11 +1,27 @@
 import { StyleSheet, Text, View, TouchableOpacity } from 'react-native'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native';
 
 export default function Avatar() {
     const [showDropdown, setShowDropdown] = useState(false);
     const navigation = useNavigation();
+    const [name, setName] = useState('');
+
+    useEffect(() => {
+        handelUsername();
+    }, [])
+
+    const handelUsername = async () => {
+        const savedData = await AsyncStorage.getItem('user');
+        if (savedData) {
+            const parsedData = JSON.parse(savedData);
+            const tempName = parsedData.name.trim();
+            const nameWithoutSpaces = tempName.replace(/\s+/g, '');
+            const initials = nameWithoutSpaces.substring(0, 1);
+            setName(initials);
+        }
+    }
 
     const handleLogout = async () => {
         await AsyncStorage.removeItem('user');
@@ -15,7 +31,7 @@ export default function Avatar() {
     return (
         <View style={{ position: 'relative', alignItems: 'flex-end', marginTop: 14, marginRight: 16 }}>
             <TouchableOpacity style={styles.container} onPress={() => setShowDropdown(!showDropdown)}>
-                <Text style={styles.text}>A</Text>
+                <Text style={styles.text}>{name}</Text>
             </TouchableOpacity>
 
             {showDropdown && (

@@ -1,8 +1,10 @@
 import { StyleSheet, Text, View, Image } from 'react-native';
-import React from 'react';
+import React, { useEffect } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function Greeting() {
     const userStatus = 7; // Example status value (can be dynamic)
+    const [name, setName] = React.useState('');
 
     const status = {
         "0-2": { text: "Poor 💸", backgroundColor: "#F44336" },
@@ -11,6 +13,10 @@ export default function Greeting() {
         "7-8": { text: "Good 👍", backgroundColor: "#4CAF50" },
         "9-10": { text: "Excellent 🌟", backgroundColor: "#2196F3" },
     };
+
+    useEffect(()=>{
+        handelUsername();
+    },[])
 
     let statusText = "";
     let statusBackgroundColor = "";
@@ -49,11 +55,19 @@ export default function Greeting() {
     const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
     const formattedDate = `${weekdays[today.getDay()]}, ${months[today.getMonth()]} ${today.getDate()}, ${today.getFullYear()}`;
 
+    const handelUsername = async () => {
+        const savedData = await AsyncStorage.getItem('user');
+        if (savedData) {
+            const parsedData = JSON.parse(savedData);
+            setName(parsedData.name);
+        }
+    }
+
     return (
         <View style={styles.container}>
             <View style={styles.greetingWrapper}>
                 <View>
-                    <Text style={styles.greetingText}>{greeting}, Aditya 👋</Text>
+                    <Text style={styles.greetingText}>{greeting}, {name} 👋</Text>
                     <Text style={styles.dateText}>{formattedDate}</Text>
                 </View>
             </View>

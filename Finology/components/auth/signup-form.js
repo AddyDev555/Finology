@@ -55,7 +55,7 @@ export default function SignupForm() {
             return;
         }
 
-        fetch('http://192.168.0.100:5000/auth/signup', {
+        fetch('https://finology.pythonanywhere.com/auth/signup', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
