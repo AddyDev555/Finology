@@ -1,26 +1,32 @@
 import React from 'react';
-import { StyleSheet, View, SafeAreaView } from 'react-native';
+import { StyleSheet, View, SafeAreaView, ScrollView } from 'react-native';
 import TopBar from '../ui/TopBar';
 import Greeting from '../ui/Greeting';
+import Overview from '../ui/Overview';
+import Menu from '../ui/Menu';
 
 const Home = () => {
     return (
         <SafeAreaView style={styles.container}>
-            <TopBar />
-            <Greeting />
+            <ScrollView contentContainerStyle={styles.scrollContainer} showsVerticalScrollIndicator={false}>
+                <TopBar />
+                <Greeting />
+                <Overview />
+                <Menu />
+            </ScrollView>
         </SafeAreaView>
     );
-}
+};
 
 const styles = StyleSheet.create({
     container: {
-        width: '100%',
         flex: 1,
-        flexDirection: 'column',
-        justifyContent: 'flex-start',
-        alignItems: 'stretch',
-        paddingHorizontal: 20,
+        backgroundColor: '#F4F6F8',
     },
-})
+    scrollContainer: {
+        paddingHorizontal: 20,
+        paddingBottom: 20,
+    },
+});
 
 export default Home;

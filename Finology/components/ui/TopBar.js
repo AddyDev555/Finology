@@ -37,16 +37,16 @@ const styles = StyleSheet.create({
         height: 40,
         borderColor: '#ccc',
         borderWidth: 1,
-        borderRadius: 8,
+        borderRadius: 30,
         backgroundColor: '#fff',
-        paddingLeft: 29,
+        paddingLeft: 32,
     },
     icon: {
         fontSize: 17,
         color: '#999',
         position: 'relative',
-        top: 27,
-        left: 8,
+        top: 28,
+        left: 10,
         zIndex: 10,
     }
 });
