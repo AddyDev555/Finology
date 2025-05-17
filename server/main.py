@@ -22,6 +22,18 @@ class User(db.Model):
     def __repr__(self):
         return f'<User {self.username}>'
 
+class ManualExpense(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, nullable=False)
+    amount = db.Column(db.Float, nullable=False)
+    category = db.Column(db.String(50), nullable=False)
+    business = db.Column(db.String(50), nullable=False)
+    date = db.Column(db.String(100), nullable=False)
+    description = db.Column(db.String(200), nullable=True)
+
+    def __repr__(self):
+        return f'<ManualExpense {self.id}>'
+
 with app.app_context():
     db.create_all()
 
@@ -74,6 +86,28 @@ def login_user():
     else:
         return jsonify({'error': 'Invalid password'}), 401
 
+
+@app.route('/manual-entry', methods=['POST'])
+def add_manual_entry():
+    data = request.get_json()
+    user_id = data['user_id']
+    amount = data['amount']
+    category = data['category']
+    business = data['business']
+    date = data['date']
+    description = data['description']
+
+    new_entry = ManualExpense(
+        user_id=user_id,
+        amount=amount,
+        category=category,
+        business=business,
+        date=date,
+        description=description
+    )
+    db.session.add(new_entry)
+    db.session.commit()
+    return jsonify({'message': 'Expense added successfully!'}), 201
 
 if __name__ == '__main__':
     with app.app_context():

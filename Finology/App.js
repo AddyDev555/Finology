@@ -8,6 +8,7 @@ import { createStackNavigator } from '@react-navigation/stack';
 import Home from './components/pages/Home';
 import Login from './components/pages/Login';
 import Signup from './components/pages/Signup';
+import ExpenseEntryPage from './components/pages/ManualEntry';
 import Toast from 'react-native-toast-message';
 
 export default function App() {
@@ -29,6 +30,7 @@ export default function App() {
           <Stack.Screen name="Home" component={Home} options={{ headerShown: false }} />
           <Stack.Screen name="Login" component={Login} options={{ headerShown: false }} />
           <Stack.Screen name="Signup" component={Signup} options={{ headerShown: false }} />
+          <Stack.Screen name="ManualEntry" component={ExpenseEntryPage} options={{ headerShown: false }} />
         </Stack.Navigator>
         <Toast />
       </NavigationContainer>

@@ -1,12 +1,19 @@
 import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
 import React from 'react';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import { useNavigation } from '@react-navigation/native';
 
 export default function Menu() {
+    const navigation = useNavigation();
+    
+    const handleMenuItemPress = (screen) => {
+        navigation.navigate(screen);
+    }
+
     return (
         <View style={styles.container}>
             <View style={styles.menuContainer}>
-                <TouchableOpacity style={styles.menuItem}>
+                <TouchableOpacity onPress={() => handleMenuItemPress("ManualEntry")} style={styles.menuItem}>
                     <MaterialCommunityIcons name="file-document-edit-outline" size={30} color="#4CAF50" />
                     <Text style={styles.menuText}>Manual Entry</Text>
                 </TouchableOpacity>
