@@ -70,9 +70,10 @@ export default function LoginForm({ navigation }) {
                 });
 
                 const name = data.username;
+                const userId = data.userId;
                 setName(name);
 
-                await AsyncStorage.setItem('user', JSON.stringify({ name, username, password }));
+                await AsyncStorage.setItem('user', JSON.stringify({userId, name, username, password }));
                 setIsFirstTime(false);
 
                 setUsername('');

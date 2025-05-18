@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import Toast from 'react-native-toast-message';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const ExpenseEntryPage = () => {
     const [amount, setAmount] = useState('');
@@ -20,6 +21,7 @@ const ExpenseEntryPage = () => {
     const [businessName, setBusinessName] = useState('');
     const [category, setCategory] = useState('');
     const [currentDateTime, setCurrentDateTime] = useState(new Date());
+    const [userData, setUserData] = useState({});
 
     // Common expense categories
     const categories = [
@@ -72,6 +74,17 @@ const ExpenseEntryPage = () => {
         return date.toLocaleDateString('en-US', options);
     };
 
+    const handelUsername = async () => {
+        const savedData = await AsyncStorage.getItem('user');
+        if (savedData) {
+            setUserData(JSON.parse(savedData));
+        }
+    }
+
+    useEffect(()=>{
+        handelUsername();
+    },[])
+
     // Validate and save expense
     const saveExpense = async () => {
         if (!amount || !description || !businessName || !category) {
@@ -99,6 +112,7 @@ const ExpenseEntryPage = () => {
         }
 
         const expense = {
+            user_id: userData.userId,
             amount: parseFloat(amount),
             description: description.trim(),
             business: businessName.trim(),
@@ -106,8 +120,10 @@ const ExpenseEntryPage = () => {
             date: formatDateTime(currentDateTime),
         };
 
+        handelUsername();
+
         try {
-            const response = await fetch('http://192.168.0.100:5000/manual-entry', {
+            const response = await fetch('https://finology.pythonanywhere.com/manual-entry', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -187,7 +203,7 @@ const ExpenseEntryPage = () => {
                         <View style={styles.inputGroup}>
                             <Text style={styles.label}>Amount *</Text>
                             <View style={styles.amountContainer}>
-                                <Text style={styles.currencySymbol}>$</Text>
+                                <Text style={styles.currencySymbol}>₹</Text>
                                 <TextInput
                                     style={styles.amountInput}
                                     value={amount}

@@ -13,6 +13,10 @@ export default function Menu() {
     return (
         <View style={styles.container}>
             <View style={styles.menuContainer}>
+                <TouchableOpacity onPress={() => handleMenuItemPress("ExpenseDashboard")} style={styles.menuItem}>
+                    <MaterialCommunityIcons name="finance" size={30} color="#2196F3" />
+                    <Text style={styles.menuText}>Expense Dashboard</Text>
+                </TouchableOpacity>
                 <TouchableOpacity onPress={() => handleMenuItemPress("ManualEntry")} style={styles.menuItem}>
                     <MaterialCommunityIcons name="file-document-edit-outline" size={30} color="#4CAF50" />
                     <Text style={styles.menuText}>Manual Entry</Text>

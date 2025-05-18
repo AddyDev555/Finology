@@ -82,7 +82,7 @@ def login_user():
         return jsonify({'error': 'User not found'}), 404
 
     if bcrypt.checkpw(input_password.encode('utf-8'), user.password.encode('utf-8')):
-        return jsonify({'message': 'Login successful!', 'username': user.username}), 200
+        return jsonify({'message': 'Login successful!', 'username': user.username, 'userId': user.id}), 200
     else:
         return jsonify({'error': 'Invalid password'}), 401
 
