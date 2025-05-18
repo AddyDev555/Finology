@@ -316,7 +316,6 @@ const styles = StyleSheet.create({
         backgroundColor: '#4CAF50',
         padding: 20,
         paddingTop: 40,
-        alignItems: 'center',
     },
     headerTitle: {
         fontSize: 24,
@@ -327,7 +326,6 @@ const styles = StyleSheet.create({
     dateTime: {
         fontSize: 14,
         color: 'rgba(255, 255, 255, 0.9)',
-        textAlign: 'center',
     },
     formContainer: {
         padding: 20,

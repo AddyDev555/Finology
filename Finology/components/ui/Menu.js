@@ -21,19 +21,19 @@ export default function Menu() {
                     <MaterialCommunityIcons name="file-document-edit-outline" size={30} color="#4CAF50" />
                     <Text style={styles.menuText}>Expense Entry</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.menuItem}>
+                <TouchableOpacity onPress={() => handleMenuItemPress("BacklogPage")} style={styles.menuItem}>
+                    <MaterialCommunityIcons name="calendar-clock" size={30} color="#E91E63" />
+                    <Text style={styles.menuText}>Payment Backlog</Text>
+                </TouchableOpacity>
+                {/* <TouchableOpacity style={styles.menuItem}>
                     <MaterialCommunityIcons name="clipboard-text-clock" size={30} color="#2196F3" />
                     <Text style={styles.menuText}>Backlogs</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.menuItem}>
+                </TouchableOpacity> */}
+                <TouchableOpacity onPress={() => handleMenuItemPress("EMICalculatorPage")} style={styles.menuItem}>
                     <MaterialCommunityIcons name="calculator-variant" size={30} color="#FF9800" />
                     <Text style={styles.menuText}>EMI Calculator</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.menuItem}>
-                    <MaterialCommunityIcons name="calendar-clock" size={30} color="#E91E63" />
-                    <Text style={styles.menuText}>Payment Due</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.menuItem}>
+                <TouchableOpacity onPress={() => handleMenuItemPress("CurrencyConverter")} style={styles.menuItem}>
                     <MaterialCommunityIcons name="currency-usd" size={30} color="#4CAF50" />
                     <Text style={styles.menuText}>Currency Converter</Text>
                 </TouchableOpacity>

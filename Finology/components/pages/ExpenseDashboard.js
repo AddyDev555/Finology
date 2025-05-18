@@ -10,6 +10,7 @@ import {
     Dimensions,
 } from 'react-native';
 import Toast from 'react-native-toast-message';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 
 const ExpenseDashboard = () => {
     const [viewMode, setViewMode] = useState('daily'); // 'daily' or 'monthly'
@@ -24,18 +25,18 @@ const ExpenseDashboard = () => {
         'July', 'August', 'September', 'October', 'November', 'December'
     ];
 
-    // Category colors for visual distinction
-    const categoryColors = {
-        'Food & Dining': '#FF6B6B',
-        'Transportation': '#4ECDC4',
-        'Shopping': '#45B7D1',
-        'Entertainment': '#4CAF50',
-        'Bills & Utilities': '#FF9800',
-        'Healthcare': '#4B0082',
-        'Travel': '#98D8C8',
-        'Personal Care': '#F7DC6F',
-        'Education': '#BB8FCE',
-        'Other': '#85C1E9',
+    // Category colors and icons for visual distinction
+    const categoryConfig = {
+        'Food & Dining': { color: '#FF6B6B', icon: 'food-fork-drink' },
+        'Transportation': { color: '#4ECDC4', icon: 'car' },
+        'Shopping': { color: '#45B7D1', icon: 'shopping' },
+        'Entertainment': { color: '#4CAF50', icon: 'movie' },
+        'Bills & Utilities': { color: '#FF9800', icon: 'flash' },
+        'Healthcare': { color: '#4B0082', icon: 'hospital-building' },
+        'Travel': { color: '#98D8C8', icon: 'airplane' },
+        'Personal Care': { color: '#F7DC6F', icon: 'face-woman-shimmer' },
+        'Education': { color: '#BB8FCE', icon: 'school' },
+        'Other': { color: '#85C1E9', icon: 'package-variant' },
     };
 
     useEffect(() => {
@@ -132,25 +133,39 @@ const ExpenseDashboard = () => {
         return new Date(date).toLocaleDateString(undefined, options);
     }
 
-    const ExpenseCard = ({ expense }) => (
-        <View style={[styles.expenseCard, { borderLeftColor: categoryColors[expense.category] || '#85C1E9' }]}>
-            <View style={styles.cardHeader}>
-                <View style={styles.amountContainer}>
-                    <Text style={styles.amountText}>{formatCurrency(expense.amount)}</Text>
-                    <Text style={[styles.categoryBadge, { backgroundColor: categoryColors[expense.category] || '#85C1E9' }]}>
-                        {expense.category}
-                    </Text>
-                </View>
-                {/* Show full date string from backend */}
-                <Text style={styles.dateText}>{formatDate(expense.date) || 'Time not available'}</Text>
-            </View>
+    const getCategoryConfig = (category) => {
+        return categoryConfig[category] || { color: '#85C1E9', icon: 'package-variant' };
+    };
 
-            <View style={styles.cardBody}>
-                <Text style={styles.businessText}>{expense.business}</Text>
-                <Text style={styles.descriptionText}>{expense.description}</Text>
+    const ExpenseCard = ({ expense }) => {
+        const config = getCategoryConfig(expense.category);
+        
+        return (
+            <View style={[styles.expenseCard, { borderLeftColor: config.color }]}>
+                <View style={styles.cardHeader}>
+                    <View style={styles.amountContainer}>
+                        <Text style={styles.amountText}>{formatCurrency(expense.amount)}</Text>
+                        <View style={[styles.categoryBadge, { backgroundColor: config.color }]}>
+                            <MaterialCommunityIcons 
+                                name={config.icon} 
+                                size={14} 
+                                color="white" 
+                                style={styles.categoryIcon}
+                            />
+                            <Text style={styles.categoryText}>{expense.category}</Text>
+                        </View>
+                    </View>
+                    {/* Show full date string from backend */}
+                    <Text style={styles.dateText}>{formatDate(expense.date) || 'Time not available'}</Text>
+                </View>
+
+                <View style={styles.cardBody}>
+                    <Text style={styles.businessText}>{expense.business}</Text>
+                    <Text style={styles.descriptionText}>{expense.description}</Text>
+                </View>
             </View>
-        </View>
-    );
+        );
+    };
 
     const DaySection = ({ dateKey, dayData }) => {
         // Sort expenses within each day by time (newest first)
@@ -181,7 +196,6 @@ const ExpenseDashboard = () => {
         return (dateB.getTime() || 0) - (dateA.getTime() || 0);
     });
 
-
     return (
         <SafeAreaView style={styles.container}>
             {/* Header */}
@@ -197,12 +211,21 @@ const ExpenseDashboard = () => {
                         acc[expense.category] = (acc[expense.category] || 0) + expense.amount;
                         return acc;
                     }, {})
-                ).map(([category, total]) => (
-                    <View key={category} style={[styles.summaryCard, { backgroundColor: categoryColors[category] || '#85C1E9' }]}>
-                        <Text style={styles.summaryCategory}>{category}</Text>
-                        <Text style={styles.summaryAmount}>{formatCurrency(total)}</Text>
-                    </View>
-                ))}
+                ).map(([category, total]) => {
+                    const config = getCategoryConfig(category);
+                    return (
+                        <View key={category} style={[styles.summaryCard, { backgroundColor: config.color }]}>
+                            <MaterialCommunityIcons 
+                                name={config.icon} 
+                                size={24} 
+                                color="white" 
+                                style={styles.summaryIcon}
+                            />
+                            <Text style={styles.summaryCategory}>{category}</Text>
+                            <Text style={styles.summaryAmount}>{formatCurrency(total)}</Text>
+                        </View>
+                    );
+                })}
             </ScrollView>
 
             {/* Expenses List */}
@@ -236,7 +259,6 @@ const styles = StyleSheet.create({
         backgroundColor: '#2196F3',
         padding: 20,
         paddingTop: 40,
-        alignItems: 'center',
     },
     headerTitle: {
         fontSize: 24,
@@ -297,7 +319,7 @@ const styles = StyleSheet.create({
     },
     summaryContainer: {
         width: '100%',
-        height: 130,
+        maxHeight: 120,
         backgroundColor: 'white',
         paddingVertical: 15,
         paddingHorizontal: 10,
@@ -306,11 +328,15 @@ const styles = StyleSheet.create({
     },
     summaryCard: {
         width: 120,
-        height: 80,
+        height: 90,
         padding: 15,
         borderRadius: 10,
         marginHorizontal: 5,
         alignItems: 'center',
+        justifyContent: 'center',
+    },
+    summaryIcon: {
+        marginBottom: 5,
     },
     summaryCategory: {
         fontSize: 12,
@@ -380,6 +406,13 @@ const styles = StyleSheet.create({
         paddingHorizontal: 8,
         paddingVertical: 4,
         borderRadius: 15,
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    categoryIcon: {
+        marginRight: 5,
+    },
+    categoryText: {
         fontSize: 12,
         color: 'white',
         fontWeight: '600',

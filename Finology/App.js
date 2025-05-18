@@ -10,6 +10,9 @@ import Login from './components/pages/Login';
 import Signup from './components/pages/Signup';
 import ExpenseEntryPage from './components/pages/ManualEntry';
 import ExpenseDashboard from './components/pages/ExpenseDashboard';
+import BacklogPage from './components/pages/BacklogsPage';
+import EMICalculatorPage from './components/pages/EMICalculator';
+import CurrencyConverter from './components/pages/CurrencyConverter';
 import Toast from 'react-native-toast-message';
 
 export default function App() {
@@ -33,6 +36,9 @@ export default function App() {
           <Stack.Screen name="Signup" component={Signup} options={{ headerShown: false }} />
           <Stack.Screen name="ManualEntry" component={ExpenseEntryPage} options={{ headerShown: false }} />
           <Stack.Screen name="ExpenseDashboard" component={ExpenseDashboard} options={{ headerShown: false }} />
+          <Stack.Screen name="BacklogPage" component={BacklogPage} options={{ headerShown: false }} />
+          <Stack.Screen name="EMICalculatorPage" component={EMICalculatorPage} options={{ headerShown: false }} />
+          <Stack.Screen name="CurrencyConverter" component={CurrencyConverter} options={{ headerShown: false }} />
         </Stack.Navigator>
         <Toast />
       </NavigationContainer>
