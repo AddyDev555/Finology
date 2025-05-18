@@ -117,7 +117,7 @@ const ExpenseEntryPage = () => {
             description: description.trim(),
             business: businessName.trim(),
             category,
-            date: formatDateTime(currentDateTime),
+            date: currentDateTime,
         };
 
         handelUsername();

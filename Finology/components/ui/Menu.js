@@ -19,11 +19,11 @@ export default function Menu() {
                 </TouchableOpacity>
                 <TouchableOpacity onPress={() => handleMenuItemPress("ManualEntry")} style={styles.menuItem}>
                     <MaterialCommunityIcons name="file-document-edit-outline" size={30} color="#4CAF50" />
-                    <Text style={styles.menuText}>Manual Entry</Text>
+                    <Text style={styles.menuText}>Expense Entry</Text>
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.menuItem}>
                     <MaterialCommunityIcons name="clipboard-text-clock" size={30} color="#2196F3" />
-                    <Text style={styles.menuText}>View Backlogs</Text>
+                    <Text style={styles.menuText}>Backlogs</Text>
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.menuItem}>
                     <MaterialCommunityIcons name="calculator-variant" size={30} color="#FF9800" />

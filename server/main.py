@@ -109,6 +109,35 @@ def add_manual_entry():
     db.session.commit()
     return jsonify({'message': 'Expense added successfully!'}), 201
 
+
+@app.route('/get-manual-entry', methods=['POST'])
+def get_manual_entry():
+    user_id = request.get_json()
+
+    if not user_id:
+        return jsonify({'error': 'Missing user_id'}), 400
+
+    entries = ManualExpense.query.filter_by(user_id=user_id).all()
+
+    if not entries:
+        return jsonify({'error': 'No entries found for this user'}), 404
+
+    result = [
+        {
+            'id': entry.id,
+            'user_id': entry.user_id,
+            'amount': entry.amount,
+            'category': entry.category,
+            'business': entry.business,
+            'date': entry.date,
+            'description': entry.description
+        }
+        for entry in entries
+    ]
+
+    return jsonify(result), 200
+
+
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()

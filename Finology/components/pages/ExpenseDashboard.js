@@ -9,7 +9,7 @@ import {
     FlatList,
     Dimensions,
 } from 'react-native';
-import { Picker } from '@react-native-picker/picker';
+import Toast from 'react-native-toast-message';
 
 const ExpenseDashboard = () => {
     const [viewMode, setViewMode] = useState('daily'); // 'daily' or 'monthly'
@@ -18,90 +18,6 @@ const ExpenseDashboard = () => {
     const [expenses, setExpenses] = useState([]);
     const [groupedExpenses, setGroupedExpenses] = useState({});
     const [totalExpenses, setTotalExpenses] = useState(0);
-
-    // Sample expense data (in real app, this would come from AsyncStorage or API)
-    const sampleExpenses = [
-        {
-            id: 1,
-            amount: 45.50,
-            category: 'Food & Dining',
-            business: 'McDonald\'s',
-            description: 'Lunch with colleagues',
-            dateTime: '2024-01-15T12:30:00Z',
-        },
-        {
-            id: 2,
-            amount: 25.00,
-            category: 'Transportation',
-            business: 'Car Wash Express',
-            description: 'Weekly car wash service',
-            dateTime: '2024-01-15T14:15:00Z',
-        },
-        {
-            id: 3,
-            amount: 89.99,
-            category: 'Shopping',
-            business: 'Target',
-            description: 'Household items and groceries',
-            dateTime: '2024-01-14T16:45:00Z',
-        },
-        {
-            id: 4,
-            amount: 12.50,
-            category: 'Transportation',
-            business: 'Metro Station',
-            description: 'Public transport fare',
-            dateTime: '2024-01-14T08:20:00Z',
-        },
-        {
-            id: 5,
-            amount: 150.00,
-            category: 'Bills & Utilities',
-            business: 'Electric Company',
-            description: 'Monthly electricity bill',
-            dateTime: '2024-01-13T10:00:00Z',
-        },
-        {
-            id: 6,
-            amount: 35.75,
-            category: 'Food & Dining',
-            business: 'Starbucks',
-            description: 'Coffee and morning snack',
-            dateTime: '2024-01-12T07:45:00Z',
-        },
-        {
-            id: 7,
-            amount: 200.00,
-            category: 'Healthcare',
-            business: 'City Medical Center',
-            description: 'Doctor consultation',
-            dateTime: '2024-01-11T15:30:00Z',
-        },
-        {
-            id: 8,
-            amount: 75.25,
-            category: 'Entertainment',
-            business: 'AMC Theaters',
-            description: 'Movie tickets and popcorn',
-            dateTime: '2024-01-10T19:00:00Z',
-        },
-        {
-            id: 9,
-            amount: 120.00,
-            category: 'Shopping',
-            business: 'Best Buy',
-            description: 'Phone accessories',
-            dateTime: '2024-12-28T13:20:00Z',
-        },
-        {
-            id: 10,
-            amount: 55.80,
-            category: 'Food & Dining',
-            business: 'Italian Bistro',
-            description: 'Dinner with family',
-            dateTime: '2024-12-27T18:30:00Z',
-        },
-    ];
 
     const months = [
         'January', 'February', 'March', 'April', 'May', 'June',
@@ -123,18 +39,55 @@ const ExpenseDashboard = () => {
     };
 
     useEffect(() => {
-        setExpenses(sampleExpenses);
-        groupExpensesByDate(sampleExpenses);
-    }, [viewMode, selectedMonth, selectedYear]);
+        FetchExpenseData();
+    }, []);
+
+    const FetchExpenseData = async () => {
+        const userId = '1';
+        try {
+            const response = await fetch('https://finology.pythonanywhere.com/get-manual-entry', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(userId),
+            });
+
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+
+            const data = await response.json();
+
+            if (data.error) {
+                throw new Error(data.error);
+            }
+
+            console.log('Fetched expenses:', data);
+            setExpenses(data);
+            groupExpensesByDate(data);
+
+        } catch (error) {
+            Toast.show({
+                type: 'error',
+                position: 'top',
+                text1: 'Error',
+                text2: 'Failed to show expense. Please try again.',
+                visibilityTime: 3000,
+                autoHide: true,
+            });
+        }
+    }
 
     const groupExpensesByDate = (expenseList) => {
         const grouped = {};
         let total = 0;
 
         expenseList.forEach(expense => {
-            const date = new Date(expense.dateTime);
-            const expenseMonth = date.getMonth();
-            const expenseYear = date.getFullYear();
+            // Parse the date string from backend format: "Sunday, May 18, 2025, 11:40:11 AM"
+            const dateObj = new Date(expense.date);
+            const expenseMonth = dateObj.getMonth();
+            const expenseYear = dateObj.getFullYear();
 
             // Filter by selected month/year if in monthly view
             if (viewMode === 'monthly' && (expenseMonth !== selectedMonth || expenseYear !== selectedYear)) {
@@ -143,19 +96,26 @@ const ExpenseDashboard = () => {
 
             total += expense.amount;
 
+            // Create date key for grouping (only date part, not time)
             const dateKey = viewMode === 'daily'
-                ? date.toDateString()
+                ? dateObj.toDateString() // e.g., "Sun May 18 2025"
                 : `${months[expenseMonth]} ${expenseYear}`;
 
             if (!grouped[dateKey]) {
                 grouped[dateKey] = {
                     expenses: [],
                     total: 0,
-                    date: date,
+                    date: dateObj,
                 };
             }
 
-            grouped[dateKey].expenses.push(expense);
+            // Add parsed date for sorting purposes
+            const enhancedExpense = {
+                ...expense,
+                parsedDate: dateObj
+            };
+
+            grouped[dateKey].expenses.push(enhancedExpense);
             grouped[dateKey].total += expense.amount;
         });
 
@@ -163,21 +123,14 @@ const ExpenseDashboard = () => {
         setTotalExpenses(total);
     };
 
-    const formatDate = (dateString) => {
-        const date = new Date(dateString);
-        const options = {
-            weekday: 'short',
-            month: 'short',
-            day: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
-        };
-        return date.toLocaleDateString('en-US', options);
+    const formatCurrency = (amount) => {
+        return `₹${amount.toFixed(2)}`;
     };
 
-    const formatCurrency = (amount) => {
-        return `$${amount.toFixed(2)}`;
-    };
+    const formatDate = (date) => {
+        const options = { year: 'numeric', month: 'long', day: 'numeric' };
+        return new Date(date).toLocaleDateString(undefined, options);
+    }
 
     const ExpenseCard = ({ expense }) => (
         <View style={[styles.expenseCard, { borderLeftColor: categoryColors[expense.category] || '#85C1E9' }]}>
@@ -188,7 +141,8 @@ const ExpenseDashboard = () => {
                         {expense.category}
                     </Text>
                 </View>
-                <Text style={styles.dateText}>{formatDate(expense.dateTime)}</Text>
+                {/* Show full date string from backend */}
+                <Text style={styles.dateText}>{formatDate(expense.date) || 'Time not available'}</Text>
             </View>
 
             <View style={styles.cardBody}>
@@ -198,21 +152,35 @@ const ExpenseDashboard = () => {
         </View>
     );
 
-    const DaySection = ({ dateKey, dayData }) => (
-        <View style={styles.daySection}>
-            <View style={styles.dayHeader}>
-                <Text style={styles.dayTitle}>{dateKey}</Text>
-                <Text style={styles.dayTotal}>{formatCurrency(dayData.total)}</Text>
+    const DaySection = ({ dateKey, dayData }) => {
+        // Sort expenses within each day by time (newest first)
+        const sortedExpenses = dayData.expenses.sort((a, b) => {
+            if (a.parsedDate && b.parsedDate) {
+                return new Date(b.parsedDate) - new Date(a.parsedDate);
+            }
+            return 0;
+        });
+
+        return (
+            <View style={styles.daySection}>
+                <View style={styles.dayHeader}>
+                    <Text style={styles.dayTitle}>{dateKey}</Text>
+                    <Text style={styles.dayTotal}>{formatCurrency(dayData.total)}</Text>
+                </View>
+                {sortedExpenses.map(expense => (
+                    <ExpenseCard key={expense.id} expense={expense} />
+                ))}
             </View>
-            {dayData.expenses.map(expense => (
-                <ExpenseCard key={expense.id} expense={expense} />
-            ))}
-        </View>
-    );
+        );
+    };
 
     const sortedKeys = Object.keys(groupedExpenses).sort((a, b) => {
-        return new Date(groupedExpenses[b].date) - new Date(groupedExpenses[a].date);
+        const dateA = new Date(groupedExpenses[a].date);
+        const dateB = new Date(groupedExpenses[b].date);
+
+        return (dateB.getTime() || 0) - (dateA.getTime() || 0);
     });
+
 
     return (
         <SafeAreaView style={styles.container}>
@@ -329,7 +297,7 @@ const styles = StyleSheet.create({
     },
     summaryContainer: {
         width: '100%',
-        height: 165,
+        height: 130,
         backgroundColor: 'white',
         paddingVertical: 15,
         paddingHorizontal: 10,
