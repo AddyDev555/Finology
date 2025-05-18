@@ -112,14 +112,6 @@ export default function LoginForm({ navigation }) {
         }
     };
 
-    const handleLogout = async () => {
-        await AsyncStorage.removeItem('user');
-        setUsername('');
-        setPassword('');
-        setIsFirstTime(true);
-        Alert.alert('Logged out', 'You have been logged out successfully.');
-    };
-
     const signUpNavigation = () => {
         navigation.navigate('Signup');
         setIsFirstTime(true);
@@ -187,14 +179,6 @@ export default function LoginForm({ navigation }) {
                     />
                     <TouchableOpacity style={styles.button} onPress={handlePasswordCheck}>
                         <Text style={styles.buttonText}>Unlock</Text>
-                    </TouchableOpacity>
-
-                    {/* Logout button */}
-                    <TouchableOpacity
-                        style={[styles.button, { backgroundColor: '#FF6B6B', marginTop: 10 }]}
-                        onPress={handleLogout}
-                    >
-                        <Text style={styles.buttonText}>Logout</Text>
                     </TouchableOpacity>
                 </>
             )}

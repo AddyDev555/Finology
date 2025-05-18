@@ -10,6 +10,7 @@ import {
     Dimensions,
 } from 'react-native';
 import Toast from 'react-native-toast-message';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 
 const ExpenseDashboard = () => {
@@ -43,8 +44,22 @@ const ExpenseDashboard = () => {
         FetchExpenseData();
     }, []);
 
+    const getUserIdFromStorage = async () => {
+        try {
+            const userDataString = await AsyncStorage.getItem('user');
+            if (!userDataString) {
+                throw new Error('User data not found in storage');
+            }
+            const userData = JSON.parse(userDataString);
+            return userData.userId;
+        } catch (error) {
+            console.error('Error getting userId:', error);
+            throw error;
+        }
+    };
+
     const FetchExpenseData = async () => {
-        const userId = '1';
+        const userId = await getUserIdFromStorage();
         try {
             const response = await fetch('https://finology.pythonanywhere.com/get-manual-entry', {
                 method: 'POST',
@@ -139,17 +154,17 @@ const ExpenseDashboard = () => {
 
     const ExpenseCard = ({ expense }) => {
         const config = getCategoryConfig(expense.category);
-        
+
         return (
             <View style={[styles.expenseCard, { borderLeftColor: config.color }]}>
                 <View style={styles.cardHeader}>
                     <View style={styles.amountContainer}>
                         <Text style={styles.amountText}>{formatCurrency(expense.amount)}</Text>
                         <View style={[styles.categoryBadge, { backgroundColor: config.color }]}>
-                            <MaterialCommunityIcons 
-                                name={config.icon} 
-                                size={14} 
-                                color="white" 
+                            <MaterialCommunityIcons
+                                name={config.icon}
+                                size={14}
+                                color="white"
                                 style={styles.categoryIcon}
                             />
                             <Text style={styles.categoryText}>{expense.category}</Text>
@@ -215,10 +230,10 @@ const ExpenseDashboard = () => {
                     const config = getCategoryConfig(category);
                     return (
                         <View key={category} style={[styles.summaryCard, { backgroundColor: config.color }]}>
-                            <MaterialCommunityIcons 
-                                name={config.icon} 
-                                size={24} 
-                                color="white" 
+                            <MaterialCommunityIcons
+                                name={config.icon}
+                                size={24}
+                                color="white"
                                 style={styles.summaryIcon}
                             />
                             <Text style={styles.summaryCategory}>{category}</Text>
