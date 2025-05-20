@@ -116,6 +116,34 @@ export default function LoginForm({ navigation }) {
         navigation.navigate('Signup');
         setIsFirstTime(true);
     };
+    
+    const handleNumericKeyPress = (num) => {
+        if (password.length < 5) {
+            setPassword(prevPassword => prevPassword + num);
+        }
+    };
+
+    const handleDeletePress = () => {
+        setPassword(prevPassword => prevPassword.slice(0, -1));
+    };
+
+    const renderPasswordDots = () => {
+        const dots = [];
+        const maxLength = 5;
+        
+        for (let i = 0; i < maxLength; i++) {
+            dots.push(
+                <View 
+                    key={i} 
+                    style={[
+                        styles.passwordDot,
+                        i < password.length ? styles.passwordDotFilled : {}
+                    ]}
+                />
+            );
+        }
+        return dots;
+    };
 
     return (
         <View style={styles.container}>
@@ -168,24 +196,76 @@ export default function LoginForm({ navigation }) {
 
             {!isFirstTime && (
                 <>
-                    <TextInput
-                        placeholder="Enter Password"
-                        style={styles.input}
-                        placeholderTextColor="#777"
-                        secureTextEntry
-                        keyboardType="number-pad"
-                        onChangeText={setPassword}
-                        maxLength={5}
-                    />
-                    <TouchableOpacity style={styles.button} onPress={handlePasswordCheck}>
+                    <View style={styles.passwordContainer}>
+                        <Text style={styles.unlockTitle}>Enter PIN</Text>
+                        <View style={styles.dotsContainer}>
+                            {renderPasswordDots()}
+                        </View>
+                    </View>
+
+                    <View style={styles.keypadContainer}>
+                        {/* Row 1 */}
+                        <View style={styles.keypadRow}>
+                            <TouchableOpacity style={styles.keypadButton} onPress={() => handleNumericKeyPress('1')}>
+                                <Text style={styles.keypadButtonText}>1</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity style={styles.keypadButton} onPress={() => handleNumericKeyPress('2')}>
+                                <Text style={styles.keypadButtonText}>2</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity style={styles.keypadButton} onPress={() => handleNumericKeyPress('3')}>
+                                <Text style={styles.keypadButtonText}>3</Text>
+                            </TouchableOpacity>
+                        </View>
+                        
+                        {/* Row 2 */}
+                        <View style={styles.keypadRow}>
+                            <TouchableOpacity style={styles.keypadButton} onPress={() => handleNumericKeyPress('4')}>
+                                <Text style={styles.keypadButtonText}>4</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity style={styles.keypadButton} onPress={() => handleNumericKeyPress('5')}>
+                                <Text style={styles.keypadButtonText}>5</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity style={styles.keypadButton} onPress={() => handleNumericKeyPress('6')}>
+                                <Text style={styles.keypadButtonText}>6</Text>
+                            </TouchableOpacity>
+                        </View>
+                        
+                        {/* Row 3 */}
+                        <View style={styles.keypadRow}>
+                            <TouchableOpacity style={styles.keypadButton} onPress={() => handleNumericKeyPress('7')}>
+                                <Text style={styles.keypadButtonText}>7</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity style={styles.keypadButton} onPress={() => handleNumericKeyPress('8')}>
+                                <Text style={styles.keypadButtonText}>8</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity style={styles.keypadButton} onPress={() => handleNumericKeyPress('9')}>
+                                <Text style={styles.keypadButtonText}>9</Text>
+                            </TouchableOpacity>
+                        </View>
+                        
+                        {/* Row 4 */}
+                        <View style={styles.keypadRow}>
+                            <View style={styles.keypadButton} />
+                            <TouchableOpacity style={styles.keypadButton} onPress={() => handleNumericKeyPress('0')}>
+                                <Text style={styles.keypadButtonText}>0</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity style={styles.keypadButton} onPress={handleDeletePress}>
+                                <Text style={styles.deleteButtonText}>⌫</Text>
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+                    
+                    <TouchableOpacity 
+                        style={styles.button} 
+                        onPress={handlePasswordCheck}
+                        disabled={password.length !== 5}
+                    >
                         <Text style={styles.buttonText}>Unlock</Text>
                     </TouchableOpacity>
                 </>
             )}
-
         </View>
     );
-
 }
 
 const styles = StyleSheet.create({
@@ -203,7 +283,6 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
     },
-
     logoLeftContainer: {
         width: '100%',
         position: 'relative',
@@ -228,6 +307,12 @@ const styles = StyleSheet.create({
         fontSize: 24,
         fontWeight: 'bold',
         marginBottom: 30,
+        color: '#4B0082',
+    },
+    unlockTitle: {
+        fontSize: 24,
+        fontWeight: 'bold',
+        marginBottom: 20,
         color: '#4B0082',
     },
     input: {
@@ -276,6 +361,10 @@ const styles = StyleSheet.create({
         shadowOffset: { width: 0, height: 4 },
         shadowRadius: 6,
         elevation: 5,
+        marginTop: 20,
+    },
+    buttonActive: {
+        backgroundColor: '#7B68EE', // Darker purple when active
     },
     buttonText: {
         color: '#fff',
@@ -288,5 +377,62 @@ const styles = StyleSheet.create({
         color: '#4B0082',
         fontSize: 16,
         textDecorationLine: 'underline',
+    },
+    // Numeric Keypad Styles
+    passwordContainer: {
+        alignItems: 'center',
+        marginBottom: 30,
+    },
+    dotsContainer: {
+        flexDirection: 'row',
+        justifyContent: 'center',
+    },
+    passwordDot: {
+        width: 16,
+        height: 16,
+        borderRadius: 8,
+        backgroundColor: '#F2EDFF',
+        marginHorizontal: 8,
+        borderWidth: 1,
+        borderColor: '#A697E8',
+    },
+    passwordDotFilled: {
+        backgroundColor: '#7B68EE',
+        borderColor: '#4B0082',
+    },
+    keypadContainer: {
+        width: '90%',
+        maxWidth: 320,
+    },
+    keypadRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        marginBottom: 16,
+    },
+    keypadButton: {
+        width: 70,
+        height: 70,
+        borderRadius: 35,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: '#F2EDFF',
+        shadowColor: '#000',
+        shadowOffset: {
+            width: 0,
+            height: 2,
+        },
+        shadowOpacity: 0.1,
+        shadowRadius: 3,
+        elevation: 3,
+    },
+    keypadButtonText: {
+        fontSize: 28,
+        fontWeight: '500',
+        color: '#4B0082',
+    },
+    deleteButtonText: {
+        fontSize: 24,
+        fontWeight: '500',
+        color: '#9370DB',
     },
 });

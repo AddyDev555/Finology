@@ -9,10 +9,11 @@ import {
     SafeAreaView,
     Alert,
     Modal,
-    FlatList,
+    Platform,
 } from 'react-native';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
-import DatePicker from 'react-native-date-picker';
+// Updated import for more reliable date picker
+import DateTimePicker from '@react-native-community/datetimepicker';
 
 const BacklogPage = () => {
     const [backlogs, setBacklogs] = useState([]);
@@ -109,6 +110,7 @@ const BacklogPage = () => {
                 item.id === editingId ? newBacklog : item
             ));
             setEditingId(null);
+            console.log(newBacklog);
             Alert.alert('Success', 'Backlog updated successfully!');
         } else {
             setBacklogs(prev => [newBacklog, ...prev]);
@@ -134,7 +136,6 @@ const BacklogPage = () => {
             category: backlog.category,
         });
         setEditingId(backlog.id);
-        // Show form when editing
         setIsFormVisible(true);
     };
 
@@ -193,6 +194,14 @@ const BacklogPage = () => {
             month: 'short',
             year: 'numeric',
         });
+    };
+
+    // Updated date picker change handler
+    const onDateChange = (event, selectedDate) => {
+        setShowDatePicker(Platform.OS === 'ios');
+        if (selectedDate) {
+            handleInputChange('dueDate', selectedDate);
+        }
     };
 
     const BacklogCard = ({ item }) => {
@@ -440,45 +449,21 @@ const BacklogPage = () => {
                 </View>
             </ScrollView>
 
-            {/* Date Picker Modal */}
-            <Modal
-                visible={showDatePicker}
-                transparent
-                animationType="slide"
-                onRequestClose={() => setShowDatePicker(false)}
-            >
-                <View style={styles.modalOverlay}>
-                    <View style={styles.datePickerContainer}>
-                        <View style={styles.datePickerHeader}>
-                            <Text style={styles.datePickerTitle}>Select Due Date</Text>
-                        </View>
-                        <DatePicker
-                            date={formData.dueDate}
-                            onDateChange={(date) => handleInputChange('dueDate', date)}
-                            mode="date"
-                            minimumDate={new Date()}
-                        />
-                        <View style={styles.datePickerActions}>
-                            <TouchableOpacity 
-                                style={styles.datePickerButton}
-                                onPress={() => setShowDatePicker(false)}
-                            >
-                                <Text style={styles.datePickerButtonText}>Cancel</Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity 
-                                style={[styles.datePickerButton, styles.confirmButton]}
-                                onPress={() => setShowDatePicker(false)}
-                            >
-                                <Text style={styles.confirmButtonText}>Confirm</Text>
-                            </TouchableOpacity>
-                        </View>
-                    </View>
-                </View>
-            </Modal>
+            {/* Updated Date Picker - No Modal Wrapper Needed */}
+            {showDatePicker && (
+                <DateTimePicker
+                    value={formData.dueDate}
+                    mode="date"
+                    display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                    minimumDate={new Date()}
+                    onChange={onDateChange}
+                />
+            )}
         </SafeAreaView>
     );
 };
 
+// Styles remain the same
 const styles = StyleSheet.create({
     container: {
         flex: 1,
@@ -751,55 +736,6 @@ const styles = StyleSheet.create({
         fontSize: 14,
         color: '#bbb',
         marginTop: 5,
-    },
-    modalOverlay: {
-        flex: 1,
-        backgroundColor: 'rgba(0, 0, 0, 0.5)',
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    datePickerContainer: {
-        backgroundColor: 'white',
-        borderRadius: 10,
-        padding: 20,
-        margin: 20,
-        maxWidth: 300,
-    },
-    datePickerHeader: {
-        marginBottom: 20,
-        alignItems: 'center',
-    },
-    datePickerTitle: {
-        fontSize: 18,
-        fontWeight: 'bold',
-        color: '#333',
-    },
-    datePickerActions: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        marginTop: 20,
-    },
-    datePickerButton: {
-        flex: 1,
-        paddingVertical: 12,
-        paddingHorizontal: 20,
-        borderRadius: 8,
-        marginHorizontal: 5,
-        alignItems: 'center',
-        backgroundColor: '#f0f0f0',
-    },
-    confirmButton: {
-        backgroundColor: '#2196F3',
-    },
-    datePickerButtonText: {
-        fontSize: 16,
-        color: '#666',
-        fontWeight: '600',
-    },
-    confirmButtonText: {
-        fontSize: 16,
-        color: 'white',
-        fontWeight: '600',
     },
 });
 
