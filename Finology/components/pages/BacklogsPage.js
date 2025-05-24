@@ -12,7 +12,7 @@ import {
     Platform,
 } from 'react-native';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
-// Updated import for more reliable date picker
+import Toast from 'react-native-toast-message';
 import DateTimePicker from '@react-native-community/datetimepicker';
 
 const BacklogPage = () => {
@@ -76,28 +76,35 @@ const BacklogPage = () => {
     };
 
     const validateForm = () => {
-        if (!formData.personName.trim()) {
+        if (!formData.personName || !formData.personName.trim()) {
             Alert.alert('Error', 'Please enter person name');
             return false;
         }
-        if (!formData.amount || parseFloat(formData.amount) <= 0) {
+        if (!formData.amount || isNaN(parseFloat(formData.amount)) || parseFloat(formData.amount) <= 0) {
             Alert.alert('Error', 'Please enter a valid amount');
             return false;
         }
-        if (!formData.description.trim()) {
+        if (!formData.description || !formData.description.trim()) {
             Alert.alert('Error', 'Please enter description');
             return false;
         }
         return true;
     };
 
-    const handleSubmit = () => {
+    const handleSubmit = async () => {
         if (!validateForm()) return;
 
+        const parsedAmount = parseFloat(formData.amount);
+
+        // Add validation for parsed amount
+        if (isNaN(parsedAmount) || parsedAmount <= 0) {
+            Alert.alert('Error', 'Please enter a valid amount');
+            return;
+        }
+
         const newBacklog = {
-            id: editingId || Date.now().toString(),
             personName: formData.personName.trim(),
-            amount: parseFloat(formData.amount),
+            amount: parsedAmount,
             description: formData.description.trim(),
             dueDate: formData.dueDate,
             category: formData.category,
@@ -105,35 +112,87 @@ const BacklogPage = () => {
             createdAt: editingId ? backlogs.find(b => b.id === editingId)?.createdAt : new Date(),
         };
 
-        if (editingId) {
-            setBacklogs(prev => prev.map(item => 
-                item.id === editingId ? newBacklog : item
-            ));
-            setEditingId(null);
-            console.log(newBacklog);
-            Alert.alert('Success', 'Backlog updated successfully!');
-        } else {
-            setBacklogs(prev => [newBacklog, ...prev]);
-            Alert.alert('Success', 'Backlog added successfully!');
-        }
+        try {
+            let response;
 
-        // Reset form
-        setFormData({
-            personName: '',
-            amount: '',
-            description: '',
-            dueDate: new Date(),
-            category: 'Family',
-        });
+            if (editingId) {
+                // Edit (PUT request)
+                response = await fetch(`http://192.168.0.100:5000/payment-due/${editingId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(newBacklog),
+                });
+            } else {
+                // Add (POST request)
+                response = await fetch('http://192.168.0.100:5000/payment-due', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(newBacklog),
+                });
+            }
+
+            if (!response.ok) {
+                throw new Error('Network error while saving backlog.');
+            }
+
+            const savedData = await response.json();
+
+            if (editingId) {
+                setBacklogs(prev =>
+                    prev.map(item => (item.id === editingId ? { ...newBacklog, id: editingId } : item))
+                );
+                Toast.show({
+                    type: 'success',
+                    position: 'top',
+                    text1: 'Backlog Updated',
+                    text2: `₹${parsedAmount.toFixed(2)} updated successfully.`,
+                    visibilityTime: 3000,
+                });
+                setEditingId(null);
+            } else {
+                setBacklogs(prev => [{ ...newBacklog, id: savedData.id || Date.now().toString() }, ...prev]);
+                Toast.show({
+                    type: 'success',
+                    position: 'top',
+                    text1: 'Backlog Added',
+                    text2: `₹${parsedAmount.toFixed(2)} added successfully.`,
+                    visibilityTime: 3000,
+                });
+            }
+
+            // Reset form
+            setFormData({
+                personName: '',
+                amount: '',
+                description: '',
+                dueDate: new Date(),
+                category: 'Family',
+            });
+            setIsFormVisible(false); // Hide form after successful submission
+        } catch (error) {
+            console.error('Error saving backlog:', error);
+            Toast.show({
+                type: 'error',
+                position: 'top',
+                text1: 'Error',
+                text2: 'Failed to save backlog. Try again.',
+                visibilityTime: 3000,
+            });
+        }
     };
+
 
     const handleEdit = (backlog) => {
         setFormData({
-            personName: backlog.personName,
-            amount: backlog.amount.toString(),
-            description: backlog.description,
-            dueDate: new Date(backlog.dueDate),
-            category: backlog.category,
+            personName: backlog.personName || '',
+            amount: backlog.amount ? backlog.amount.toString() : '',  // Add null check
+            description: backlog.description || '',
+            dueDate: backlog.dueDate ? new Date(backlog.dueDate) : new Date(),
+            category: backlog.category || 'Family',
         });
         setEditingId(backlog.id);
         setIsFormVisible(true);
@@ -150,6 +209,15 @@ const BacklogPage = () => {
                     style: 'destructive',
                     onPress: () => {
                         setBacklogs(prev => prev.filter(item => item.id !== id));
+
+                        Toast.show({
+                            type: 'success',
+                            text1: 'Backlog Deleted',
+                            text2: 'The backlog was successfully removed!',
+                            position: 'top',
+                            visibilityTime: 3000,
+                            autoHide: true,
+                        });
                     },
                 },
             ]
@@ -157,8 +225,8 @@ const BacklogPage = () => {
     };
 
     const markAsPaid = (id) => {
-        setBacklogs(prev => prev.map(item => 
-            item.id === id 
+        setBacklogs(prev => prev.map(item =>
+            item.id === id
                 ? { ...item, status: 'paid', paidAt: new Date() }
                 : item
         ));
@@ -185,7 +253,8 @@ const BacklogPage = () => {
     };
 
     const formatCurrency = (amount) => {
-        return `₹${amount.toFixed(2)}`;
+        const numAmount = typeof amount === 'number' ? amount : parseFloat(amount) || 0;
+        return `₹${numAmount.toFixed(2)}`;
     };
 
     const formatDate = (date) => {
@@ -214,10 +283,10 @@ const BacklogPage = () => {
                 <View style={styles.cardHeader}>
                     <View style={styles.personInfo}>
                         <View style={styles.nameContainer}>
-                            <MaterialCommunityIcons 
-                                name={categoryConfig.icon} 
-                                size={20} 
-                                color={categoryConfig.color} 
+                            <MaterialCommunityIcons
+                                name={categoryConfig.icon}
+                                size={20}
+                                color={categoryConfig.color}
                             />
                             <Text style={styles.personName}>{item.personName}</Text>
                         </View>
@@ -227,11 +296,11 @@ const BacklogPage = () => {
                     </View>
                     <View style={styles.statusContainer}>
                         <Text style={[styles.statusText, { color: statusColor }]}>
-                            {item.status === 'paid' 
-                                ? 'Paid' 
-                                : daysUntilDue < 0 
+                            {item.status === 'paid'
+                                ? 'Paid'
+                                : daysUntilDue < 0
                                     ? `Overdue by ${Math.abs(daysUntilDue)} days`
-                                    : daysUntilDue === 0 
+                                    : daysUntilDue === 0
                                         ? 'Due Today'
                                         : `${daysUntilDue} days left`
                             }
@@ -252,7 +321,7 @@ const BacklogPage = () => {
 
                 <View style={styles.cardActions}>
                     {item.status !== 'paid' && (
-                        <TouchableOpacity 
+                        <TouchableOpacity
                             style={[styles.actionButton, styles.paidButton]}
                             onPress={() => markAsPaid(item.id)}
                         >
@@ -260,14 +329,14 @@ const BacklogPage = () => {
                             <Text style={styles.actionButtonText}>Mark Paid</Text>
                         </TouchableOpacity>
                     )}
-                    <TouchableOpacity 
+                    <TouchableOpacity
                         style={[styles.actionButton, styles.editButton]}
                         onPress={() => handleEdit(item)}
                     >
                         <MaterialCommunityIcons name="pencil" size={16} color="white" />
                         <Text style={styles.actionButtonText}>Edit</Text>
                     </TouchableOpacity>
-                    <TouchableOpacity 
+                    <TouchableOpacity
                         style={[styles.actionButton, styles.deleteButton]}
                         onPress={() => handleDelete(item.id)}
                     >
@@ -281,9 +350,9 @@ const BacklogPage = () => {
 
     const totalPending = backlogs
         .filter(item => item.status === 'pending')
-        .reduce((sum, item) => sum + item.amount, 0);
-
-    const overdueCount = backlogs.filter(item => 
+        .reduce((sum, item) => sum + (typeof item.amount === 'number' ? item.amount : parseFloat(item.amount) || 0), 0);
+    
+        const overdueCount = backlogs.filter(item =>
         item.status === 'pending' && getDaysUntilDue(item.dueDate) < 0
     ).length;
 
@@ -305,16 +374,16 @@ const BacklogPage = () => {
             <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
                 {/* Form Section with Collapsible Header */}
                 <View style={styles.formContainer}>
-                    <TouchableOpacity 
+                    <TouchableOpacity
                         style={styles.formHeader}
                         onPress={() => setIsFormVisible(!isFormVisible)}
                         activeOpacity={0.7}
                     >
                         <Text style={styles.sectionTitle}>Add New Payment Due</Text>
-                        <MaterialCommunityIcons 
-                            name={isFormVisible ? "chevron-up" : "chevron-down"} 
-                            size={24} 
-                            color="#666" 
+                        <MaterialCommunityIcons
+                            name={isFormVisible ? "chevron-up" : "chevron-down"}
+                            size={24}
+                            color="#666"
                         />
                     </TouchableOpacity>
 
@@ -370,10 +439,10 @@ const BacklogPage = () => {
                                                 ]}
                                                 onPress={() => handleInputChange('category', category.name)}
                                             >
-                                                <MaterialCommunityIcons 
-                                                    name={category.icon} 
-                                                    size={20} 
-                                                    color={formData.category === category.name ? 'white' : category.color} 
+                                                <MaterialCommunityIcons
+                                                    name={category.icon}
+                                                    size={20}
+                                                    color={formData.category === category.name ? 'white' : category.color}
                                                 />
                                                 <Text style={[
                                                     styles.categoryOptionText,
@@ -389,7 +458,7 @@ const BacklogPage = () => {
 
                             <View style={styles.inputContainer}>
                                 <Text style={styles.inputLabel}>Due Date</Text>
-                                <TouchableOpacity 
+                                <TouchableOpacity
                                     style={styles.dateButton}
                                     onPress={() => setShowDatePicker(true)}
                                 >
@@ -401,10 +470,10 @@ const BacklogPage = () => {
                             </View>
 
                             <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
-                                <MaterialCommunityIcons 
-                                    name={editingId ? "content-save" : "plus"} 
-                                    size={20} 
-                                    color="white" 
+                                <MaterialCommunityIcons
+                                    name={editingId ? "content-save" : "plus"}
+                                    size={20}
+                                    color="white"
                                 />
                                 <Text style={styles.submitButtonText}>
                                     {editingId ? 'Update Backlog' : 'Add Backlog'}
@@ -412,8 +481,8 @@ const BacklogPage = () => {
                             </TouchableOpacity>
 
                             {editingId && (
-                                <TouchableOpacity 
-                                    style={styles.cancelButton} 
+                                <TouchableOpacity
+                                    style={styles.cancelButton}
                                     onPress={() => {
                                         setEditingId(null);
                                         setFormData({

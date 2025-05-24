@@ -44,7 +44,7 @@ export default function Menu() {
 
 const styles = StyleSheet.create({
     container: {
-        marginTop: 20,
+        marginTop: 12,
         padding: 0,
         backgroundColor: '#F4F6F8',
         flex: 1,

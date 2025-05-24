@@ -37,6 +37,17 @@ class ManualExpense(db.Model):
 with app.app_context():
     db.create_all()
 
+class PaymentDue(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, nullable=False)
+    amount = db.Column(db.Float, nullable=False)
+    description = db.Column(db.String(200), nullable=True)
+    category = db.Column(db.String(50), nullable=False)
+    date = db.Column(db.String(50), nullable=False)
+
+    def __repr__(self):
+        return f'<PaymentDue {self.id}>'
+
 @app.route('/')
 def index():
     return jsonify('Welcome to the Finology API Server!'), 200
@@ -136,6 +147,42 @@ def get_manual_entry():
     ]
 
     return jsonify(result), 200
+
+
+@app.route('/payment-due', methods=['POST'])
+def add_payment_due():
+    data = request.get_json()
+    new_due = PaymentDue(
+        user_id=data['user_id'],
+        amount=data['amount'],
+        description=data.get('description'),
+        category=data['category'],
+        date=data['date']
+    )
+    db.session.add(new_due)
+    db.session.commit()
+    return jsonify({'message': 'PaymentDue added successfully', 'id': new_due.id}), 201
+
+@app.route('/payment-due/<int:id>', methods=['PUT'])
+def edit_payment_due(id):
+    data = request.get_json()
+    due = PaymentDue.query.get_or_404(id)
+
+    due.user_id = data.get('user_id', due.user_id)
+    due.amount = data.get('amount', due.amount)
+    due.description = data.get('description', due.description)
+    due.category = data.get('category', due.category)
+    due.date = data.get('date', due.date)
+
+    db.session.commit()
+    return jsonify({'message': 'PaymentDue updated successfully'})
+
+@app.route('/payment-due/<int:id>', methods=['DELETE'])
+def delete_payment_due(id):
+    due = PaymentDue.query.get_or_404(id)
+    db.session.delete(due)
+    db.session.commit()
+    return jsonify({'message': 'PaymentDue deleted successfully'})
 
 
 if __name__ == '__main__':

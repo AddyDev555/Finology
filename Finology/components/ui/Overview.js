@@ -6,24 +6,24 @@ export default function Overview() {
     return (
         <View style={styles.cardContainer}>
             <View style={styles.card}>
-                <MaterialCommunityIcons name="wallet" size={28} color="#4CAF50" />
+                <MaterialCommunityIcons name="wallet" size={28} color="#A5D6A7" />
                 <Text style={styles.cardTitle}>Total Balance</Text>
-                <Text style={styles.cardValue}>₹ 1,00,000</Text>
+                <Text style={[styles.cardValue, { color: "#4CAF50" }]}>₹ 1,00,000</Text>
             </View>
             <View style={styles.card}>
-                <MaterialCommunityIcons name="cash-minus" size={28} color="#F44336" />
+                <MaterialCommunityIcons name="cash-minus" size={28} color="#EF9A9A" />
                 <Text style={styles.cardTitle}>Monthly Expense</Text>
-                <Text style={styles.cardValue}>₹ 45,000</Text>
+                <Text style={[styles.cardValue, { color: "#F44336"}]}>₹ 45,000</Text>
             </View>
             <View style={styles.card}>
-                <MaterialCommunityIcons name="cash-plus" size={28} color="#2196F3" />
+                <MaterialCommunityIcons name="cash-plus" size={28} color="#90CAF9" />
                 <Text style={styles.cardTitle}>Income</Text>
-                <Text style={styles.cardValue}>₹ 75,000</Text>
+                <Text style={[styles.cardValue, { color: "#2196F3"}]}>₹ 75,000</Text>
             </View>
             <View style={styles.card}>
-                <MaterialCommunityIcons name="bank" size={28} color="#9C27B0" />
+                <MaterialCommunityIcons name="bank" size={28} color="#CE93D8" />
                 <Text style={styles.cardTitle}>Savings</Text>
-                <Text style={styles.cardValue}>₹ 30,000</Text>
+                <Text style={[styles.cardValue, { color: "#9C27B0"}]}>₹ 30,000</Text>
             </View>
         </View>
     );
@@ -35,7 +35,7 @@ const styles = StyleSheet.create({
         flexWrap: 'wrap',
         justifyContent: 'space-between',
         padding: 5,
-        marginTop: 10,
+        marginTop: 15,
     },
     card: {
         width: '48.5%',
