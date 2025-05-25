@@ -61,7 +61,7 @@ const BacklogPage = () => {
         try {
             setLoading(true);
             const userId = await getUserIdFromStorage();
-            const response = await fetch(`http://192.168.0.100:5000/payment-due/${userId}`, {
+            const response = await fetch(`https://finology.pythonanywhere.com/payment-due/${userId}`, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
@@ -89,7 +89,14 @@ const BacklogPage = () => {
 
     const handleSubmit = async () => {
         if (!formData.name.trim() || !formData.amount || !formData.description.trim()) {
-            Alert.alert('Error', 'Please fill all required fields');
+            Toast.show({
+                type: 'error',
+                position: 'top',
+                text1: 'Form not Filled',
+                text2: 'Please fill in all required fields.',
+                visibilityTime: 3000,
+                autoHide: true,
+            });
             return;
         }
 
@@ -113,13 +120,13 @@ const BacklogPage = () => {
 
             let response;
             if (editingId) {
-                response = await fetch(`http://192.168.0.100:5000/payment-due/${editingId}`, {
+                response = await fetch(`https://finology.pythonanywhere.com/payment-due/${editingId}`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(newBacklog),
                 });
             } else {
-                response = await fetch('http://192.168.0.100:5000/payment-due', {
+                response = await fetch('https://finology.pythonanywhere.com/payment-due', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(newBacklog),
@@ -187,7 +194,7 @@ const BacklogPage = () => {
                     onPress: async () => {
                         try {
                             setActionLoading(id);
-                            const response = await fetch(`http://192.168.0.100:5000/payment-due/${id}`, {
+                            const response = await fetch(`https://finology.pythonanywhere.com/payment-due/${id}`, {
                                 method: 'DELETE',
                                 headers: { 'Content-Type': 'application/json' },
                             });
@@ -297,11 +304,11 @@ const BacklogPage = () => {
 
                 <Text style={styles.description}>{item.description}</Text>
 
-                <View style={{flexDirection: 'row', alignItems: 'center'}}>
-                    <View style={[styles.categoryBadge, { backgroundColor: categoryConfig.color, marginRight: 7, marginTop: 2}]}>
+                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                    <View style={[styles.categoryBadge, { backgroundColor: categoryConfig.color, marginRight: 7, marginTop: 2 }]}>
                         <Text style={styles.categoryText}>{item.category}</Text>
                     </View>
-                    <Text style={[styles.dateInfo, {marginLeft:'auto'}]}>Due: {formatDate(item.date)}</Text>
+                    <Text style={[styles.dateInfo, { marginLeft: 'auto' }]}>Due: {formatDate(item.date)}</Text>
                 </View>
 
                 {isLoading ? (
@@ -447,8 +454,8 @@ const BacklogPage = () => {
                                 </Text>
                             </TouchableOpacity>
 
-                            <TouchableOpacity 
-                                style={[styles.submitButton, submitting && styles.disabledButton]} 
+                            <TouchableOpacity
+                                style={[styles.submitButton, submitting && styles.disabledButton]}
                                 onPress={handleSubmit}
                                 disabled={submitting}
                             >

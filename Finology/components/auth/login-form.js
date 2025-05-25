@@ -12,6 +12,7 @@ import {
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Toast from 'react-native-toast-message';
 import { Picker } from '@react-native-picker/picker';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 
 export default function LoginForm({ navigation }) {
     const [isFirstTime, setIsFirstTime] = useState(true);
@@ -245,23 +246,17 @@ export default function LoginForm({ navigation }) {
                         
                         {/* Row 4 */}
                         <View style={styles.keypadRow}>
-                            <View style={styles.keypadButton} />
                             <TouchableOpacity style={styles.keypadButton} onPress={() => handleNumericKeyPress('0')}>
                                 <Text style={styles.keypadButtonText}>0</Text>
                             </TouchableOpacity>
                             <TouchableOpacity style={styles.keypadButton} onPress={handleDeletePress}>
                                 <Text style={styles.deleteButtonText}>⌫</Text>
                             </TouchableOpacity>
+                            <TouchableOpacity style={styles.keypadButton} onPress={handlePasswordCheck} disabled={password.length !== 5}>
+                                <MaterialCommunityIcons name="lock-open-variant" size={30} color="#4B0082"/>
+                            </TouchableOpacity>
                         </View>
                     </View>
-                    
-                    <TouchableOpacity 
-                        style={styles.button} 
-                        onPress={handlePasswordCheck}
-                        disabled={password.length !== 5}
-                    >
-                        <Text style={styles.buttonText}>Unlock</Text>
-                    </TouchableOpacity>
                 </>
             )}
         </View>
@@ -401,6 +396,8 @@ const styles = StyleSheet.create({
         borderColor: '#4B0082',
     },
     keypadContainer: {
+        position: 'relative',
+        top: 100,
         width: '90%',
         maxWidth: 320,
     },

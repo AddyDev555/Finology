@@ -34,7 +34,7 @@ export default function Menu() {
                     <Text style={styles.menuText}>EMI Calculator</Text>
                 </TouchableOpacity>
                 <TouchableOpacity onPress={() => handleMenuItemPress("CurrencyConverter")} style={styles.menuItem}>
-                    <MaterialCommunityIcons name="currency-usd" size={30} color="#4CAF50" />
+                    <MaterialCommunityIcons name="currency-usd" size={30} color="#7B68EE" />
                     <Text style={styles.menuText}>Currency Converter</Text>
                 </TouchableOpacity>
             </View>
