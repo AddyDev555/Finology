@@ -34,12 +34,10 @@ class ManualExpense(db.Model):
     def __repr__(self):
         return f'<ManualExpense {self.id}>'
 
-with app.app_context():
-    db.create_all()
-
 class PaymentDue(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, nullable=False)
+    name = db.Column(db.String(50), nullable=False)
     amount = db.Column(db.Float, nullable=False)
     description = db.Column(db.String(200), nullable=True)
     category = db.Column(db.String(50), nullable=False)
@@ -153,11 +151,12 @@ def get_manual_entry():
 def add_payment_due():
     data = request.get_json()
     new_due = PaymentDue(
-        user_id=data['user_id'],
+        user_id=data['userId'],
+        name = data['name'],
         amount=data['amount'],
         description=data.get('description'),
         category=data['category'],
-        date=data['date']
+        date=data['dueDate']
     )
     db.session.add(new_due)
     db.session.commit()
@@ -169,6 +168,7 @@ def edit_payment_due(id):
     due = PaymentDue.query.get_or_404(id)
 
     due.user_id = data.get('user_id', due.user_id)
+    due.name = data.get('name', due.name)
     due.amount = data.get('amount', due.amount)
     due.description = data.get('description', due.description)
     due.category = data.get('category', due.category)
@@ -184,6 +184,23 @@ def delete_payment_due(id):
     db.session.commit()
     return jsonify({'message': 'PaymentDue deleted successfully'})
 
+@app.route('/payment-due/<int:user_id>', methods=['GET'])
+def get_payment_due_by_user(user_id):
+    dues = PaymentDue.query.filter_by(user_id=user_id).all()
+
+    due_list = []
+    for due in dues:
+        due_list.append({
+            'id': due.id,
+            'user_id': due.user_id,
+            'name': due.name,
+            'amount': due.amount,
+            'description': due.description,
+            'category': due.category,
+            'date': due.date
+        })
+
+    return jsonify({'payment_dues': due_list}), 200
 
 if __name__ == '__main__':
     with app.app_context():

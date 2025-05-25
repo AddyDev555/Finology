@@ -12,6 +12,7 @@ import {
 import Toast from 'react-native-toast-message';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import { BallIndicator } from 'react-native-indicators';
 
 const ExpenseDashboard = () => {
     const [viewMode, setViewMode] = useState('daily'); // 'daily' or 'monthly'
@@ -20,6 +21,7 @@ const ExpenseDashboard = () => {
     const [expenses, setExpenses] = useState([]);
     const [groupedExpenses, setGroupedExpenses] = useState({});
     const [totalExpenses, setTotalExpenses] = useState(0);
+    const [isLoading, setIsLoading] = useState(true); // Add loading state
 
     const months = [
         'January', 'February', 'March', 'April', 'May', 'June',
@@ -59,6 +61,7 @@ const ExpenseDashboard = () => {
     };
 
     const FetchExpenseData = async () => {
+        setIsLoading(true); // Start loading
         const userId = await getUserIdFromStorage();
         try {
             const response = await fetch('https://finology.pythonanywhere.com/get-manual-entry', {
@@ -79,7 +82,6 @@ const ExpenseDashboard = () => {
                 throw new Error(data.error);
             }
 
-            console.log('Fetched expenses:', data);
             setExpenses(data);
             groupExpensesByDate(data);
 
@@ -92,6 +94,8 @@ const ExpenseDashboard = () => {
                 visibilityTime: 3000,
                 autoHide: true,
             });
+        } finally {
+            setIsLoading(false); // Stop loading
         }
     }
 
@@ -213,52 +217,61 @@ const ExpenseDashboard = () => {
 
     return (
         <SafeAreaView style={styles.container}>
-            {/* Header */}
+            {/* Header - Always visible */}
             <View style={styles.header}>
                 <Text style={styles.headerTitle}>Expense Dashboard</Text>
                 <Text style={styles.totalAmount}>Total: {formatCurrency(totalExpenses)}</Text>
             </View>
 
-            {/* Expense Summary Cards */}
-            <ScrollView style={styles.summaryContainer} horizontal showsHorizontalScrollIndicator={false}>
-                {Object.entries(
-                    expenses.reduce((acc, expense) => {
-                        acc[expense.category] = (acc[expense.category] || 0) + expense.amount;
-                        return acc;
-                    }, {})
-                ).map(([category, total]) => {
-                    const config = getCategoryConfig(category);
-                    return (
-                        <View key={category} style={[styles.summaryCard, { backgroundColor: config.color }]}>
-                            <MaterialCommunityIcons
-                                name={config.icon}
-                                size={24}
-                                color="white"
-                                style={styles.summaryIcon}
-                            />
-                            <Text style={styles.summaryCategory}>{category}</Text>
-                            <Text style={styles.summaryAmount}>{formatCurrency(total)}</Text>
-                        </View>
-                    );
-                })}
-            </ScrollView>
+            {/* Show loader below header while data is being fetched */}
+            {isLoading ? (
+                <View style={styles.contentLoaderContainer}>
+                    <BallIndicator color="#2196F3" size={50} />
+                </View>
+            ) : (
+                <>
+                    {/* Expense Summary Cards */}
+                    <ScrollView style={styles.summaryContainer} horizontal showsHorizontalScrollIndicator={false}>
+                        {Object.entries(
+                            expenses.reduce((acc, expense) => {
+                                acc[expense.category] = (acc[expense.category] || 0) + expense.amount;
+                                return acc;
+                            }, {})
+                        ).map(([category, total]) => {
+                            const config = getCategoryConfig(category);
+                            return (
+                                <View key={category} style={[styles.summaryCard, { backgroundColor: config.color }]}>
+                                    <MaterialCommunityIcons
+                                        name={config.icon}
+                                        size={24}
+                                        color="white"
+                                        style={styles.summaryIcon}
+                                    />
+                                    <Text style={styles.summaryCategory}>{category}</Text>
+                                    <Text style={styles.summaryAmount}>{formatCurrency(total)}</Text>
+                                </View>
+                            );
+                        })}
+                    </ScrollView>
 
-            {/* Expenses List */}
-            <ScrollView style={styles.expensesContainer} showsVerticalScrollIndicator={false}>
-                {sortedKeys.length > 0 ? (
-                    sortedKeys.map(dateKey => (
-                        <DaySection
-                            key={dateKey}
-                            dateKey={dateKey}
-                            dayData={groupedExpenses[dateKey]}
-                        />
-                    ))
-                ) : (
-                    <View style={styles.emptyContainer}>
-                        <Text style={styles.emptyText}>No expenses found for the selected period</Text>
-                    </View>
-                )}
-            </ScrollView>
+                    {/* Expenses List */}
+                    <ScrollView style={styles.expensesContainer} showsVerticalScrollIndicator={false}>
+                        {sortedKeys.length > 0 ? (
+                            sortedKeys.map(dateKey => (
+                                <DaySection
+                                    key={dateKey}
+                                    dateKey={dateKey}
+                                    dayData={groupedExpenses[dateKey]}
+                                />
+                            ))
+                        ) : (
+                            <View style={styles.emptyContainer}>
+                                <Text style={styles.emptyText}>No expenses found for the selected period</Text>
+                            </View>
+                        )}
+                    </ScrollView>
+                </>
+            )}
         </SafeAreaView>
     );
 };
@@ -285,6 +298,19 @@ const styles = StyleSheet.create({
         fontSize: 18,
         color: 'rgba(255, 255, 255, 0.9)',
         fontWeight: '600',
+    },
+    contentLoaderContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: '#f5f5f5',
+        paddingTop: 50,
+    },
+    loaderText: {
+        marginTop: 20,
+        fontSize: 16,
+        color: '#666',
+        fontWeight: '500',
     },
     controlsContainer: {
         backgroundColor: 'white',
