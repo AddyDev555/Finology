@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View, TextInput, TouchableOpacity } from 'react-native';
+import { StyleSheet, Text, View, TextInput, TouchableOpacity, Image } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import React, { useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
@@ -12,6 +12,7 @@ export default function SignupForm() {
     const [password, setPassword] = useState('');
     const [error, setError] = useState({});
     const navigation = useNavigation();
+    const [isFirstTime, setIsFirstTime] = useState(false);
 
     const handleSignup = () => {
         let errors = {};
@@ -65,13 +66,13 @@ export default function SignupForm() {
             .then(response => {
                 if (!response.ok) {
                     Toast.show({
-                    type: 'error',
-                    position: 'top',
-                    text1: 'Failed!',
-                    text2: `${response.json().error}`,
-                    visibilityTime: 3000,
-                    autoHide: true,
-                });
+                        type: 'error',
+                        position: 'top',
+                        text1: 'Failed!',
+                        text2: `${response.json().error}`,
+                        visibilityTime: 3000,
+                        autoHide: true,
+                    });
                 }
                 Toast.show({
                     type: 'success',
@@ -105,73 +106,85 @@ export default function SignupForm() {
 
     return (
         <View style={styles.container}>
-            <Text style={styles.title}>Create Account</Text>
+            <View style={styles.signupContainer}>
+                <View style={styles.logoTitleContainer}>
+                    <View style={isFirstTime ? styles.logoContainer : styles.logoLeftContainer}>
+                        <Image source={require('../../assets/mainLogo.png')} style={styles.logo} />
+                    </View>
+                    <Text style={styles.title}>Create Account</Text>
+                </View>
 
-            <TextInput
-                placeholder="Username"
-                style={styles.input}
-                placeholderTextColor="#777"
-                onChangeText={setUsername}
-                value={username}
-            />
-            {error.username && <Text style={styles.errorText}>{error.username}</Text>} {/* Display error */}
-
-            <TextInput
-                placeholder="Email"
-                style={styles.input}
-                placeholderTextColor="#777"
-                keyboardType="email-address"
-                onChangeText={setEmail}
-                value={email}
-            />
-            {error.email && <Text style={styles.errorText}>{error.email}</Text>} {/* Display error */}
-
-            <View style={styles.phoneContainer}>
-                <Picker
-                    selectedValue={countryCode}
-                    style={styles.picker}
-                    onValueChange={(itemValue) => setCountryCode(itemValue)}
-                >
-                    <Picker.Item label="+91 🇮🇳" value="+91" />
-                    <Picker.Item label="+1 🇺🇸" value="+1" />
-                    <Picker.Item label="+44 🇬🇧" value="+44" />
-                    <Picker.Item label="+61 🇦🇺" value="+61" />
-                </Picker>
+                {/* Username */}
+                <Text style={styles.label}>Username</Text>
                 <TextInput
-                    placeholder="Phone Number"
-                    style={styles.phoneInput}
+                    style={styles.input}
                     placeholderTextColor="#777"
-                    keyboardType="phone-pad"
-                    onChangeText={setPhoneNumber}
-                    value={phoneNumber}
-                    maxLength={10}
+                    onChangeText={setUsername}
+                    value={username}
                 />
+                {error.username && <Text style={styles.errorText}>{error.username}</Text>}
+
+                {/* Email */}
+                <Text style={styles.label}>Email</Text>
+                <TextInput
+                    style={styles.input}
+                    placeholderTextColor="#777"
+                    keyboardType="email-address"
+                    onChangeText={setEmail}
+                    value={email}
+                />
+                {error.email && <Text style={styles.errorText}>{error.email}</Text>}
+
+                {/* Phone */}
+                <Text style={styles.label}>Phone Number</Text>
+                <View style={styles.phoneContainer}>
+                    <Picker
+                        selectedValue={countryCode}
+                        style={styles.picker}
+                        onValueChange={(itemValue) => setCountryCode(itemValue)}
+                    >
+                        <Picker.Item label="+91 🇮🇳" value="+91" />
+                        <Picker.Item label="+1 🇺🇸" value="+1" />
+                        <Picker.Item label="+44 🇬🇧" value="+44" />
+                        <Picker.Item label="+61 🇦🇺" value="+61" />
+                    </Picker>
+                    <TextInput
+                        style={styles.phoneInput}
+                        placeholderTextColor="#777"
+                        keyboardType="phone-pad"
+                        onChangeText={setPhoneNumber}
+                        value={phoneNumber}
+                        maxLength={10}
+                    />
+                </View>
+                {error.phoneNumber && <Text style={styles.errorText}>{error.phoneNumber}</Text>}
+
+                {/* Password */}
+                <Text style={styles.label}>Password</Text>
+                <TextInput
+                    style={styles.input}
+                    placeholderTextColor="#777"
+                    secureTextEntry
+                    keyboardType="numeric"
+                    onChangeText={setPassword}
+                    value={password}
+                    maxLength={5}
+                />
+                {error.password && <Text style={styles.errorText}>{error.password}</Text>}
+
+                <TouchableOpacity
+                    style={styles.button}
+                    onPress={handleSignup}
+                >
+                    <Text style={styles.buttonText}>Sign Up</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity onPress={loginNavigation}>
+                    <Text style={[styles.loginNav, { textAlign: 'center' }]}>
+                        Already got an account? Login
+                    </Text>
+                </TouchableOpacity>
             </View>
-            {error.phoneNumber && <Text style={styles.errorText}>{error.phoneNumber}</Text>}
-
-            <TextInput
-                placeholder="Password"
-                style={styles.input}
-                placeholderTextColor="#777"
-                secureTextEntry
-                keyboardType="numeric"
-                onChangeText={setPassword}
-                value={password}
-                maxLength={5}
-            />
-            {error.password && <Text style={styles.errorText}>{error.password}</Text>} {/* Display error */}
-
-            <TouchableOpacity
-                style={styles.button}
-                onPress={handleSignup}
-            >
-                <Text style={styles.buttonText}>Sign Up</Text>
-            </TouchableOpacity>
-
-
-            <TouchableOpacity onPress={loginNavigation}>
-                <Text style={styles.loginNav}>Already got an account? Login</Text>
-            </TouchableOpacity>
         </View>
     );
 }
@@ -180,16 +193,46 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         width: '100%',
-        backgroundColor: '#CDC1FF',
+        backgroundColor: 'white',
         justifyContent: 'center',
         alignItems: 'center',
         paddingHorizontal: 30,
     },
+    signupContainer: {
+        width: '100%',
+        backgroundColor: 'white',
+        borderRadius: 15,
+        padding: 25,
+        borderWidth: 1,
+        borderColor: '#E0E0E0',
+        shadowColor: '#000',
+        shadowOffset: {
+            width: 0,
+            height: 4,
+        },
+        shadowOpacity: 0.1,
+        shadowRadius: 8,
+        elevation: 8,
+    },
+    logoTitleContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 20,
+    },
+    logoLeftContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    logo: {
+        width: 50,
+        height: 50,
+        marginRight: 5,
+    },
     title: {
         fontSize: 24,
         fontWeight: 'bold',
-        marginBottom: 30,
         color: '#4B0082',
+        textAlign: 'left',
     },
     input: {
         width: '100%',
@@ -230,6 +273,7 @@ const styles = StyleSheet.create({
         width: '100%',
         backgroundColor: '#7B68EE',
         paddingVertical: 15,
+        marginTop: 15,
         borderRadius: 10,
         alignItems: 'center',
         shadowColor: '#000',
@@ -254,5 +298,12 @@ const styles = StyleSheet.create({
         color: 'red',
         fontSize: 12,
         marginBottom: 10,
+    },
+    label: {
+        fontSize: 15,
+        color: '#4B0082',
+        marginBottom: 4,
+        marginTop: 10,
+        fontWeight: '600',
     },
 });

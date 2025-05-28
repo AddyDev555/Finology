@@ -14,6 +14,7 @@ import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityI
 import Toast from 'react-native-toast-message';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import Calculator from '../ui/Calculator';
 import { BallIndicator } from 'react-native-indicators';
 
 const BacklogPage = () => {
@@ -368,8 +369,13 @@ const BacklogPage = () => {
     return (
         <SafeAreaView style={styles.container}>
             <View style={styles.header}>
-                <Text style={styles.headerTitle}>Payment Backlog</Text>
-                <Text style={styles.totalPending}>Total Pending: {formatCurrency(totalPending)}</Text>
+                <View>
+                    <Text style={styles.headerTitle}>Payment Backlog</Text>
+                    <Text style={styles.totalPending}>Total Pending: {formatCurrency(totalPending)}</Text>
+                </View>
+                <View style={{ marginLeft: 'auto' }}>
+                    <Calculator color="#E91E63" />
+                </View>
             </View>
 
             <ScrollView style={styles.content}>
@@ -526,7 +532,7 @@ const BacklogPage = () => {
 
 const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: '#f5f5f5' },
-    header: { backgroundColor: '#E91E63', padding: 20, paddingTop: 40 },
+    header: { backgroundColor: '#E91E63', padding: 20, paddingTop: 40, flexDirection: 'row', alignItems: 'center' },
     headerTitle: { fontSize: 24, fontWeight: 'bold', color: 'white', marginBottom: 10 },
     totalPending: { fontSize: 16, color: 'rgba(255, 255, 255, 0.9)', fontWeight: '600' },
     content: { flex: 1 },

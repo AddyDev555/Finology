@@ -2,6 +2,7 @@ import { StyleSheet, Text, View, TouchableOpacity } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 export default function Avatar() {
     const [showDropdown, setShowDropdown] = useState(false);
@@ -36,7 +37,8 @@ export default function Avatar() {
 
             {showDropdown && (
                 <View style={styles.dropdown}>
-                    <TouchableOpacity onPress={handleLogout}>
+                    <TouchableOpacity style={styles.option} onPress={handleLogout}>
+                        <MaterialCommunityIcons name="logout" size={20} color="#E53935" />
                         <Text style={styles.dropdownItem}>Logout</Text>
                     </TouchableOpacity>
                 </View>
@@ -61,7 +63,7 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
     },
     dropdown: {
-        width: 74,
+        width: 95,
         position: 'absolute',
         top: 50,
         right: 20,
@@ -75,9 +77,14 @@ const styles = StyleSheet.create({
         elevation: 10,
         zIndex: 999,
     },
+    option:{
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
     dropdownItem: {
         fontSize: 16,
         paddingVertical: 4,
+        marginLeft: 4,
         color: '#333',
     },
 });

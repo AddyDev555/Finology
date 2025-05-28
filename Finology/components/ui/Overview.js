@@ -61,14 +61,14 @@ export default function Overview() {
     return (
         <View style={styles.cardContainer}>
             <View style={styles.card}>
-                <MaterialCommunityIcons name="wallet" size={28} color="#A5D6A7" />
+                <MaterialCommunityIcons name="cash-multiple" size={28} color="#EF9A9A" />
                 <Text style={styles.cardTitle}>Total Expense</Text>
-                <Text style={[styles.cardValue, { color: "#4CAF50" }]}>₹ {TotalExpenditure}</Text>
+                <Text style={[styles.cardValue, { color: "#F44336" }]}>₹ {TotalExpenditure}</Text>
             </View>
             <View style={styles.card}>
-                <MaterialCommunityIcons name="cash-minus" size={28} color="#EF9A9A" />
+                <MaterialCommunityIcons name="cash-minus" size={28} color="#FFC08C" />
                 <Text style={styles.cardTitle}>Monthly Expense</Text>
-                <Text style={[styles.cardValue, { color: "#F44336" }]}>₹ {MonthlyExpenditure}</Text>
+                <Text style={[styles.cardValue, { color: "#FF9B45" }]}>₹ {MonthlyExpenditure}</Text>
             </View>
             <View style={styles.card}>
                 <MaterialCommunityIcons name="cash-plus" size={28} color="#90CAF9" />

@@ -5,7 +5,7 @@ import { useNavigation } from '@react-navigation/native';
 
 export default function Menu() {
     const navigation = useNavigation();
-    
+
     const handleMenuItemPress = (screen) => {
         navigation.navigate(screen);
     }
@@ -37,6 +37,10 @@ export default function Menu() {
                     <MaterialCommunityIcons name="currency-usd" size={30} color="#7B68EE" />
                     <Text style={styles.menuText}>Currency Converter</Text>
                 </TouchableOpacity>
+                <TouchableOpacity onPress={() => handleMenuItemPress("OnlineExpense")} style={styles.menuItem}>
+                    <MaterialCommunityIcons name="credit-card-outline" size={30} color="gray" />
+                    <Text style={styles.menuText}>Online Expense</Text>
+                </TouchableOpacity>
             </View>
         </View>
     );
@@ -44,16 +48,27 @@ export default function Menu() {
 
 const styles = StyleSheet.create({
     container: {
-        marginTop: 12,
+        marginTop: 0,
         padding: 0,
-        backgroundColor: '#F4F6F8',
+        backgroundColor: 'white',
         flex: 1,
+        borderWidth: 1,
+        borderColor: '#E0E0E0',
+        borderRadius: 16,
+        shadowColor: '#000',
+        shadowOpacity: 0.08,
+        shadowOffset: { width: 0, height: 4 },
+        shadowRadius: 12,
+        elevation: 4,
+        paddingTop: 20,
+        paddingBottom: 8,
     },
     menuContainer: {
         width: '100%',
         flexDirection: 'row',
         flexWrap: 'wrap',
-        gap: 16,
+        columnGap: 15.9,
+        rowGap: 3, 
     },
     menuItem: {
         width: '30%',
@@ -64,7 +79,7 @@ const styles = StyleSheet.create({
     menuText: {
         width: '80%',
         textAlign: 'center',
-        fontSize: 13,
+        fontSize: 12,
         fontWeight: '500',
         color: '#333',
         paddingTop: 5,

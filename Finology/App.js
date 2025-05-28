@@ -13,6 +13,7 @@ import ExpenseDashboard from './components/pages/ExpenseDashboard';
 import BacklogPage from './components/pages/BacklogsPage';
 import EMICalculatorPage from './components/pages/EMICalculator';
 import CurrencyConverter from './components/pages/CurrencyConverter';
+// import OnlineExpense from './components/pages/OnlineExpense';
 import Toast from 'react-native-toast-message';
 
 export default function App() {
@@ -39,6 +40,7 @@ export default function App() {
           <Stack.Screen name="BacklogPage" component={BacklogPage} options={{ headerShown: false }} />
           <Stack.Screen name="EMICalculatorPage" component={EMICalculatorPage} options={{ headerShown: false }} />
           <Stack.Screen name="CurrencyConverter" component={CurrencyConverter} options={{ headerShown: false }} />
+          {/* <Stack.Screen name="OnlineExpense" component={OnlineExpense} options={{ headerShown: false }} /> */}
         </Stack.Navigator>
         <Toast />
       </NavigationContainer>

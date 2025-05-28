@@ -226,7 +226,7 @@ const ExpenseDashboard = () => {
             {/* Show loader below header while data is being fetched */}
             {isLoading ? (
                 <View style={styles.contentLoaderContainer}>
-                    <BallIndicator color="#2196F3" size={50} />
+                    <BallIndicator color="#2196F3" size={60} />
                 </View>
             ) : (
                 <>

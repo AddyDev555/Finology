@@ -240,7 +240,7 @@ const EMICalculatorPage = () => {
                                     style={[
                                         styles.modeOption,
                                         calculatorMode === mode.key && styles.selectedMode,
-                                        { borderColor: mode.color }
+                                        // { borderColor: mode.color }
                                     ]}
                                     onPress={() => {
                                         setCalculatorMode(mode.key);
@@ -548,9 +548,10 @@ const styles = StyleSheet.create({
         borderWidth: 2,
         backgroundColor: 'white',
         minWidth: 120,
+        borderColor: '#e0e0e0',
     },
     selectedMode: {
-        backgroundColor: '#2196F3',
+        backgroundColor: '#FF9800',
     },
     modeText: {
         marginTop: 8,
@@ -627,7 +628,7 @@ const styles = StyleSheet.create({
         backgroundColor: '#f9f9f9',
     },
     selectedTenureType: {
-        backgroundColor: '#2196F3',
+        backgroundColor: '#FF9800',
     },
     tenureTypeText: {
         fontSize: 14,
@@ -652,7 +653,7 @@ const styles = StyleSheet.create({
         marginHorizontal: 5,
     },
     calculateButton: {
-        backgroundColor: '#2196F3',
+        backgroundColor: '#FF9800',
     },
     resetButton: {
         backgroundColor: '#f0f0f0',

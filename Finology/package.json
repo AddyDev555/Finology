@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@expo/vector-icons": "^14.1.0",
+    "@maniac-tech/react-native-expo-read-sms": "^9.0.2-alpha",
     "@react-native-async-storage/async-storage": "^2.1.2",
     "@react-native-community/datetimepicker": "^8.3.0",
     "@react-native-picker/picker": "^2.11.0",
@@ -17,15 +18,19 @@
     "@react-navigation/stack": "^7.0.0",
     "expo": "~53.0.9",
     "expo-navigation-bar": "~4.2.4",
+    "expo-sms": "~13.1.4",
     "expo-status-bar": "~2.2.3",
     "react": "^19.0.0",
     "react-native": "0.79.2",
     "react-native-date-picker": "^5.0.12",
+    "react-native-get-sms-android": "^2.1.0",
     "react-native-indicators": "^0.17.0",
     "react-native-safe-area-context": "^5.0.0",
     "react-native-screens": "^4.0.0",
     "react-native-svg": "15.11.2",
-    "react-native-toast-message": "^2.3.0"
+    "react-native-toast-message": "^2.3.0",
+    "expo-auth-session": "~6.1.5",
+    "expo-web-browser": "~14.1.6"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0"
