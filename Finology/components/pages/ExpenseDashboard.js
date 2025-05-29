@@ -8,20 +8,19 @@ import {
     SafeAreaView,
     FlatList,
     Dimensions,
+    RefreshControl,
 } from 'react-native';
-import Toast from 'react-native-toast-message';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { BallIndicator } from 'react-native-indicators';
 
-const ExpenseDashboard = () => {
+const ExpenseDashboard = ({ expenses = [], isLoading = false, onRefresh, refreshKey }) => {
     const [viewMode, setViewMode] = useState('daily'); // 'daily' or 'monthly'
     const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());
     const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
-    const [expenses, setExpenses] = useState([]);
     const [groupedExpenses, setGroupedExpenses] = useState({});
     const [totalExpenses, setTotalExpenses] = useState(0);
-    const [isLoading, setIsLoading] = useState(true); // Add loading state
+    const [monthlyExpenses, setMonthlyExpenses] = useState(0);
+    const [refreshing, setRefreshing] = useState(false);
 
     const months = [
         'January', 'February', 'March', 'April', 'May', 'June',
@@ -42,66 +41,43 @@ const ExpenseDashboard = () => {
         'Other': { color: '#85C1E9', icon: 'package-variant' },
     };
 
+    // Group expenses whenever expenses data changes
     useEffect(() => {
-        FetchExpenseData();
-    }, []);
-
-    const getUserIdFromStorage = async () => {
-        try {
-            const userDataString = await AsyncStorage.getItem('user');
-            if (!userDataString) {
-                throw new Error('User data not found in storage');
-            }
-            const userData = JSON.parse(userDataString);
-            return userData.userId;
-        } catch (error) {
-            console.error('Error getting userId:', error);
-            throw error;
+        if (expenses && expenses.length > 0) {
+            groupExpensesByDate(expenses);
+            calculateTotals(expenses);
+        } else {
+            setGroupedExpenses({});
+            setTotalExpenses(0);
+            setMonthlyExpenses(0);
         }
+    }, [expenses, viewMode, selectedMonth, selectedYear]);
+
+    const calculateTotals = (expenseList) => {
+        let total = 0;
+        let monthly = 0;
+        const currentMonth = new Date().getMonth();
+        const currentYear = new Date().getFullYear();
+
+        expenseList.forEach(expense => {
+            const dateObj = new Date(expense.date);
+            const expenseMonth = dateObj.getMonth();
+            const expenseYear = dateObj.getFullYear();
+
+            total += expense.amount;
+
+            // Calculate current month expenses
+            if (expenseMonth === currentMonth && expenseYear === currentYear) {
+                monthly += expense.amount;
+            }
+        });
+
+        setTotalExpenses(total);
+        setMonthlyExpenses(monthly);
     };
-
-    const FetchExpenseData = async () => {
-        setIsLoading(true); // Start loading
-        const userId = await getUserIdFromStorage();
-        try {
-            const response = await fetch('https://finology.pythonanywhere.com/get-manual-entry', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(userId),
-            });
-
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-
-            const data = await response.json();
-
-            if (data.error) {
-                throw new Error(data.error);
-            }
-
-            setExpenses(data);
-            groupExpensesByDate(data);
-
-        } catch (error) {
-            Toast.show({
-                type: 'error',
-                position: 'top',
-                text1: 'Error',
-                text2: 'Failed to show expense. Please try again.',
-                visibilityTime: 3000,
-                autoHide: true,
-            });
-        } finally {
-            setIsLoading(false); // Stop loading
-        }
-    }
 
     const groupExpensesByDate = (expenseList) => {
         const grouped = {};
-        let total = 0;
 
         expenseList.forEach(expense => {
             // Parse the date string from backend format: "Sunday, May 18, 2025, 11:40:11 AM"
@@ -113,8 +89,6 @@ const ExpenseDashboard = () => {
             if (viewMode === 'monthly' && (expenseMonth !== selectedMonth || expenseYear !== selectedYear)) {
                 return;
             }
-
-            total += expense.amount;
 
             // Create date key for grouping (only date part, not time)
             const dateKey = viewMode === 'daily'
@@ -140,7 +114,14 @@ const ExpenseDashboard = () => {
         });
 
         setGroupedExpenses(grouped);
-        setTotalExpenses(total);
+    };
+
+    const handleRefresh = async () => {
+        if (onRefresh) {
+            setRefreshing(true);
+            await onRefresh();
+            setRefreshing(false);
+        }
     };
 
     const formatCurrency = (amount) => {
@@ -211,93 +192,129 @@ const ExpenseDashboard = () => {
     const sortedKeys = Object.keys(groupedExpenses).sort((a, b) => {
         const dateA = new Date(groupedExpenses[a].date);
         const dateB = new Date(groupedExpenses[b].date);
-
         return (dateB.getTime() || 0) - (dateA.getTime() || 0);
     });
 
+    // Show loading indicator
+    if (isLoading) {
+        return (
+            <View style={styles.contentLoaderContainer}>
+                <BallIndicator color="#2196F3" size={60} />
+            </View>
+        );
+    }
+
     return (
-        <SafeAreaView style={styles.container}>
-            {/* Header - Always visible */}
-            <View style={styles.header}>
-                <Text style={styles.headerTitle}>Expense Dashboard</Text>
-                <Text style={styles.totalAmount}>Total: {formatCurrency(totalExpenses)}</Text>
+        <View style={styles.container}>
+            {/* Summary Cards - Total and Monthly Expense */}
+            <View style={styles.topSummaryContainer}>
+                <View style={styles.summaryRow}>
+                    <View style={[styles.topSummaryCard, { backgroundColor: '#2196F3' }]}>
+                        <MaterialCommunityIcons
+                            name="wallet"
+                            size={32}
+                            color="white"
+                            style={styles.topSummaryIcon}
+                        />
+                        <View style={styles.topSummaryContent}>
+                            <Text style={styles.topSummaryLabel}>Total Expenses</Text>
+                            <Text style={styles.topSummaryAmount}>{formatCurrency(totalExpenses)}</Text>
+                        </View>
+                    </View>
+
+                    <View style={[styles.topSummaryCard, { backgroundColor: '#4CAF50' }]}>
+                        <MaterialCommunityIcons
+                            name="calendar-month"
+                            size={32}
+                            color="white"
+                            style={styles.topSummaryIcon}
+                        />
+                        <View style={styles.topSummaryContent}>
+                            <Text style={styles.topSummaryLabel}>This Month</Text>
+                            <Text style={styles.topSummaryAmount}>{formatCurrency(monthlyExpenses)}</Text>
+                        </View>
+                    </View>
+                </View>
             </View>
 
-            {/* Show loader below header while data is being fetched */}
-            {isLoading ? (
-                <View style={styles.contentLoaderContainer}>
-                    <BallIndicator color="#2196F3" size={60} />
-                </View>
-            ) : (
-                <>
-                    {/* Expense Summary Cards */}
-                    <ScrollView style={styles.summaryContainer} horizontal showsHorizontalScrollIndicator={false}>
-                        {Object.entries(
-                            expenses.reduce((acc, expense) => {
-                                acc[expense.category] = (acc[expense.category] || 0) + expense.amount;
-                                return acc;
-                            }, {})
-                        ).map(([category, total]) => {
-                            const config = getCategoryConfig(category);
-                            return (
-                                <View key={category} style={[styles.summaryCard, { backgroundColor: config.color }]}>
-                                    <MaterialCommunityIcons
-                                        name={config.icon}
-                                        size={24}
-                                        color="white"
-                                        style={styles.summaryIcon}
-                                    />
-                                    <Text style={styles.summaryCategory}>{category}</Text>
-                                    <Text style={styles.summaryAmount}>{formatCurrency(total)}</Text>
-                                </View>
-                            );
-                        })}
-                    </ScrollView>
+            {/* Category Summary Cards */}
+            <ScrollView 
+                style={styles.summaryContainer} 
+                horizontal 
+                showsHorizontalScrollIndicator={false}
+                refreshControl={
+                    <RefreshControl
+                        refreshing={refreshing}
+                        onRefresh={handleRefresh}
+                        colors={['#2196F3']}
+                        tintColor="#2196F3"
+                    />
+                }
+            >
+                {Object.entries(
+                    expenses.reduce((acc, expense) => {
+                        acc[expense.category] = (acc[expense.category] || 0) + expense.amount;
+                        return acc;
+                    }, {})
+                ).map(([category, total]) => {
+                    const config = getCategoryConfig(category);
+                    return (
+                        <View key={category} style={[styles.summaryCard, { backgroundColor: config.color }]}>
+                            <MaterialCommunityIcons
+                                name={config.icon}
+                                size={24}
+                                color="white"
+                                style={styles.summaryIcon}
+                            />
+                            <Text style={styles.summaryCategory}>{category}</Text>
+                            <Text style={styles.summaryAmount}>{formatCurrency(total)}</Text>
+                        </View>
+                    );
+                })}
+            </ScrollView>
 
-                    {/* Expenses List */}
-                    <ScrollView style={styles.expensesContainer} showsVerticalScrollIndicator={false}>
-                        {sortedKeys.length > 0 ? (
-                            sortedKeys.map(dateKey => (
-                                <DaySection
-                                    key={dateKey}
-                                    dateKey={dateKey}
-                                    dayData={groupedExpenses[dateKey]}
-                                />
-                            ))
-                        ) : (
-                            <View style={styles.emptyContainer}>
-                                <Text style={styles.emptyText}>No expenses found for the selected period</Text>
-                            </View>
-                        )}
-                    </ScrollView>
-                </>
-            )}
-        </SafeAreaView>
+            {/* Expenses List */}
+            <ScrollView 
+                style={styles.expensesContainer} 
+                showsVerticalScrollIndicator={false}
+                refreshControl={
+                    <RefreshControl
+                        refreshing={refreshing}
+                        onRefresh={handleRefresh}
+                        colors={['#2196F3']}
+                        tintColor="#2196F3"
+                    />
+                }
+            >
+                {sortedKeys.length > 0 ? (
+                    sortedKeys.map(dateKey => (
+                        <DaySection
+                            key={dateKey}
+                            dateKey={dateKey}
+                            dayData={groupedExpenses[dateKey]}
+                        />
+                    ))
+                ) : (
+                    <View style={styles.emptyContainer}>
+                        <MaterialCommunityIcons
+                            name="receipt"
+                            size={64}
+                            color="#ccc"
+                            style={styles.emptyIcon}
+                        />
+                        <Text style={styles.emptyText}>No expenses found</Text>
+                        <Text style={styles.emptySubText}>Pull down to refresh or add your first expense</Text>
+                    </View>
+                )}
+            </ScrollView>
+        </View>
     );
 };
-
-const { width } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: '#f5f5f5',
-    },
-    header: {
-        backgroundColor: '#2196F3',
-        padding: 20,
-        paddingTop: 40,
-    },
-    headerTitle: {
-        fontSize: 24,
-        fontWeight: 'bold',
-        color: 'white',
-        marginBottom: 5,
-    },
-    totalAmount: {
-        fontSize: 18,
-        color: 'rgba(255, 255, 255, 0.9)',
-        fontWeight: '600',
     },
     contentLoaderContainer: {
         flex: 1,
@@ -305,6 +322,8 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         backgroundColor: '#f5f5f5',
         paddingTop: 50,
+        marginTop: 180,
+        minHeight: 200,
     },
     loaderText: {
         marginTop: 20,
@@ -312,51 +331,46 @@ const styles = StyleSheet.create({
         color: '#666',
         fontWeight: '500',
     },
-    controlsContainer: {
+    // New styles for top summary cards
+    topSummaryContainer: {
         backgroundColor: 'white',
-        padding: 15,
+        paddingVertical: 20,
+        paddingHorizontal: 15,
         borderBottomWidth: 1,
         borderBottomColor: '#e0e0e0',
     },
-    viewModeContainer: {
-        flexDirection: 'row',
-        backgroundColor: '#f0f0f0',
-        borderRadius: 25,
-        padding: 3,
-        marginBottom: 15,
-    },
-    viewModeButton: {
-        flex: 1,
-        paddingVertical: 10,
-        paddingHorizontal: 20,
-        borderRadius: 20,
-        alignItems: 'center',
-    },
-    activeViewMode: {
-        backgroundColor: '#2196F3',
-    },
-    viewModeText: {
-        fontSize: 16,
-        color: '#666',
-        fontWeight: '600',
-    },
-    activeViewModeText: {
-        color: 'white',
-    },
-    monthYearContainer: {
+    summaryRow: {
         flexDirection: 'row',
         justifyContent: 'space-between',
+        gap: 15,
     },
-    pickerContainer: {
+    topSummaryCard: {
         flex: 1,
-        marginHorizontal: 5,
-        backgroundColor: '#f9f9f9',
-        borderRadius: 8,
-        borderWidth: 1,
-        borderColor: '#e0e0e0',
+        flexDirection: 'column',
+        alignItems: 'center',
+        padding: 10,
+        borderRadius: 15,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+        elevation: 3,
     },
-    picker: {
-        height: 50,
+    topSummaryContent: {
+        flex: 1,
+    },
+    topSummaryLabel: {
+        fontSize: 13,
+        color: 'rgba(255, 255, 255, 0.8)',
+        fontWeight: '500',
+        textAlign: 'center',
+        marginBottom: 5,
+    },
+    topSummaryAmount: {
+        fontSize: 18,
+        color: 'white',
+        fontWeight: 'bold',
+        textAlign: 'center',
     },
     summaryContainer: {
         width: '100%',
@@ -392,8 +406,9 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
     },
     expensesContainer: {
-        // flex: 1,
-        padding: 15,
+        flex: 1,
+        paddingVertical: 10,
+        paddingHorizontal: 0,
     },
     daySection: {
         marginBottom: 20,
@@ -484,10 +499,21 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
         paddingVertical: 50,
+        minHeight: 200,
+    },
+    emptyIcon: {
+        marginBottom: 16,
     },
     emptyText: {
-        fontSize: 16,
+        fontSize: 18,
         color: '#666',
+        textAlign: 'center',
+        fontWeight: '600',
+        marginBottom: 8,
+    },
+    emptySubText: {
+        fontSize: 14,
+        color: '#999',
         textAlign: 'center',
     },
 });
