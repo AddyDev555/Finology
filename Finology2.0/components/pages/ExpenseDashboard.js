@@ -139,13 +139,15 @@ const ExpenseDashboard = ({ expenses = [], isLoading = false, onRefresh, refresh
 
     const ExpenseCard = ({ expense }) => {
         const config = getCategoryConfig(expense.category);
+        const cardStyle = [styles.expenseCard, { borderLeftColor: config.color }];
+        const badgeStyle = [styles.categoryBadge, { backgroundColor: config.color }];
 
         return (
-            <View style={[styles.expenseCard, { borderLeftColor: config.color }]}>
+            <View style={cardStyle}>
                 <View style={styles.cardHeader}>
                     <View style={styles.amountContainer}>
                         <Text style={styles.amountText}>{formatCurrency(expense.amount)}</Text>
-                        <View style={[styles.categoryBadge, { backgroundColor: config.color }]}>
+                        <View style={badgeStyle}>
                             <MaterialCommunityIcons
                                 name={config.icon}
                                 size={14}
@@ -204,6 +206,14 @@ const ExpenseDashboard = ({ expenses = [], isLoading = false, onRefresh, refresh
         );
     }
 
+    // Calculate category totals only when expenses exist
+    const categoryTotals = expenses && expenses.length > 0 
+        ? expenses.reduce((acc, expense) => {
+            acc[expense.category] = (acc[expense.category] || 0) + expense.amount;
+            return acc;
+        }, {})
+        : {};
+
     return (
         <View style={styles.container}>
             {/* Summary Cards - Total and Monthly Expense */}
@@ -238,9 +248,9 @@ const ExpenseDashboard = ({ expenses = [], isLoading = false, onRefresh, refresh
             </View>
 
             {/* Category Summary Cards */}
-            <ScrollView 
-                style={styles.summaryContainer} 
-                horizontal 
+            <ScrollView
+                style={styles.summaryContainer}
+                horizontal
                 showsHorizontalScrollIndicator={false}
                 refreshControl={
                     <RefreshControl
@@ -251,15 +261,12 @@ const ExpenseDashboard = ({ expenses = [], isLoading = false, onRefresh, refresh
                     />
                 }
             >
-                {Object.entries(
-                    expenses.reduce((acc, expense) => {
-                        acc[expense.category] = (acc[expense.category] || 0) + expense.amount;
-                        return acc;
-                    }, {})
-                ).map(([category, total]) => {
+                {Object.entries(categoryTotals).map(([category, total]) => {
                     const config = getCategoryConfig(category);
+                    const cardStyle = [styles.summaryCard, { backgroundColor: config.color }];
+                    
                     return (
-                        <View key={category} style={[styles.summaryCard, { backgroundColor: config.color }]}>
+                        <View key={category} style={cardStyle}>
                             <MaterialCommunityIcons
                                 name={config.icon}
                                 size={24}
@@ -274,8 +281,8 @@ const ExpenseDashboard = ({ expenses = [], isLoading = false, onRefresh, refresh
             </ScrollView>
 
             {/* Expenses List */}
-            <ScrollView 
-                style={styles.expensesContainer} 
+            <ScrollView
+                style={styles.expensesContainer}
                 showsVerticalScrollIndicator={false}
                 refreshControl={
                     <RefreshControl

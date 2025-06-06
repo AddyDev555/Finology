@@ -94,10 +94,10 @@ const Home = () => {
                     <TopBar />
                     <View style={styles.ExpenseDashboardCon}>
                         <ExpenseDashboard
+                            key={refreshKey}
                             expenses={expenses}
                             isLoading={isLoading}
                             onRefresh={refreshExpenseData}
-                            refreshKey={refreshKey}
                         />
                     </View>
                     {/* <Greeting /> */}
