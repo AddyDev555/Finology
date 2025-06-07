@@ -9,8 +9,10 @@ import {
     Alert,
     ActivityIndicator,
     Modal,
+    SafeAreaView,
     FlatList,
 } from 'react-native';
+import BottomBar from '../ui/BottomBar';
 
 const CurrencyConverter = () => {
     const [fromCurrency, setFromCurrency] = useState('USD');
@@ -152,137 +154,137 @@ const CurrencyConverter = () => {
     const toCurrencyData = getCurrencyData(toCurrency);
 
     return (
-        <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-            <View style={styles.content}>
-                {/* Header */}
-                <View style={styles.header}>
-                    <Text style={styles.headerTitle}>Currency Converter</Text>
-                    <Text style={styles.headerSubtitle}>Real-time exchange rates</Text>
-                </View>
+        <SafeAreaView style={{ flex: 1, backgroundColor: '#F0F4F8' }}>
+            <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+                <View style={styles.content}>
 
-                {/* Converter Card */}
-                <View style={styles.converterCard}>
-                    {/* From Currency */}
-                    <View style={styles.currencySection}>
-                        <Text style={styles.sectionLabel}>From</Text>
-                        <TouchableOpacity
-                            style={styles.currencySelector}
-                            onPress={() => setShowFromPicker(true)}
-                        >
-                            <Text style={styles.currencyFlag}>{fromCurrencyData.flag}</Text>
-                            <View style={styles.currencyInfo}>
-                                <Text style={styles.currencyCode}>{fromCurrency}</Text>
-                                <Text style={styles.currencyName}>{fromCurrencyData.name}</Text>
+                    {/* Converter Card */}
+                    <View style={styles.converterCard}>
+                        {/* From Currency */}
+                        <View style={styles.currencySection}>
+                            <Text style={styles.sectionLabel}>From</Text>
+                            <TouchableOpacity
+                                style={styles.currencySelector}
+                                onPress={() => setShowFromPicker(true)}
+                            >
+                                <Text style={styles.currencyFlag}>{fromCurrencyData.flag}</Text>
+                                <View style={styles.currencyInfo}>
+                                    <Text style={styles.currencyCode}>{fromCurrency}</Text>
+                                    <Text style={styles.currencyName}>{fromCurrencyData.name}</Text>
+                                </View>
+                                <Text style={styles.dropdownArrow}>▼</Text>
+                            </TouchableOpacity>
+
+                            <View style={styles.inputContainer}>
+                                <Text style={styles.currencySymbol}>{fromCurrencyData.symbol}</Text>
+                                <TextInput
+                                    style={styles.amountInput}
+                                    value={amount}
+                                    onChangeText={handleAmountChange}
+                                    placeholder="0.00"
+                                    keyboardType="decimal-pad"
+                                    placeholderTextColor="#A0A0A0"
+                                />
                             </View>
-                            <Text style={styles.dropdownArrow}>▼</Text>
-                        </TouchableOpacity>
-
-                        <View style={styles.inputContainer}>
-                            <Text style={styles.currencySymbol}>{fromCurrencyData.symbol}</Text>
-                            <TextInput
-                                style={styles.amountInput}
-                                value={amount}
-                                onChangeText={handleAmountChange}
-                                placeholder="0.00"
-                                keyboardType="decimal-pad"
-                                placeholderTextColor="#A0A0A0"
-                            />
                         </View>
-                    </View>
 
-                    {/* Swap Button */}
-                    <View style={styles.swapContainer}>
+                        {/* Swap Button */}
+                        <View style={styles.swapContainer}>
+                            <TouchableOpacity
+                                style={styles.swapButton}
+                                onPress={swapCurrencies}
+                                disabled={loading}
+                            >
+                                <Text style={styles.swapIcon}>⇅</Text>
+                            </TouchableOpacity>
+                        </View>
+
+                        {/* To Currency */}
+                        <View style={styles.currencySection}>
+                            <Text style={styles.sectionLabel}>To</Text>
+                            <TouchableOpacity
+                                style={styles.currencySelector}
+                                onPress={() => setShowToPicker(true)}
+                            >
+                                <Text style={styles.currencyFlag}>{toCurrencyData.flag}</Text>
+                                <View style={styles.currencyInfo}>
+                                    <Text style={styles.currencyCode}>{toCurrency}</Text>
+                                    <Text style={styles.currencyName}>{toCurrencyData.name}</Text>
+                                </View>
+                                <Text style={styles.dropdownArrow}>▼</Text>
+                            </TouchableOpacity>
+
+                            <View style={styles.inputContainer}>
+                                <Text style={styles.currencySymbol}>{toCurrencyData.symbol}</Text>
+                                <TextInput
+                                    style={[styles.amountInput, styles.convertedInput]}
+                                    value={convertedAmount}
+                                    placeholder="0.00"
+                                    editable={false}
+                                    placeholderTextColor="#A0A0A0"
+                                />
+                            </View>
+                        </View>
+
+                        {/* Exchange Rate Info */}
+                        {exchangeRate && !loading && (
+                            <View style={styles.rateInfo}>
+                                <Text style={styles.rateText}>
+                                    1 {fromCurrency} = {exchangeRate.toFixed(4)} {toCurrency}
+                                </Text>
+                                {lastUpdated && (
+                                    <Text style={styles.lastUpdated}>
+                                        Last updated: {lastUpdated}
+                                    </Text>
+                                )}
+                            </View>
+                        )}
+
+                        {/* Refresh Button */}
                         <TouchableOpacity
-                            style={styles.swapButton}
-                            onPress={swapCurrencies}
+                            style={styles.refreshButton}
+                            onPress={fetchExchangeRate}
                             disabled={loading}
                         >
-                            <Text style={styles.swapIcon}>⇅</Text>
-                        </TouchableOpacity>
-                    </View>
-
-                    {/* To Currency */}
-                    <View style={styles.currencySection}>
-                        <Text style={styles.sectionLabel}>To</Text>
-                        <TouchableOpacity
-                            style={styles.currencySelector}
-                            onPress={() => setShowToPicker(true)}
-                        >
-                            <Text style={styles.currencyFlag}>{toCurrencyData.flag}</Text>
-                            <View style={styles.currencyInfo}>
-                                <Text style={styles.currencyCode}>{toCurrency}</Text>
-                                <Text style={styles.currencyName}>{toCurrencyData.name}</Text>
-                            </View>
-                            <Text style={styles.dropdownArrow}>▼</Text>
-                        </TouchableOpacity>
-
-                        <View style={styles.inputContainer}>
-                            <Text style={styles.currencySymbol}>{toCurrencyData.symbol}</Text>
-                            <TextInput
-                                style={[styles.amountInput, styles.convertedInput]}
-                                value={convertedAmount}
-                                placeholder="0.00"
-                                editable={false}
-                                placeholderTextColor="#A0A0A0"
-                            />
-                        </View>
-                    </View>
-
-                    {/* Exchange Rate Info */}
-                    {exchangeRate && !loading && (
-                        <View style={styles.rateInfo}>
-                            <Text style={styles.rateText}>
-                                1 {fromCurrency} = {exchangeRate.toFixed(4)} {toCurrency}
-                            </Text>
-                            {lastUpdated && (
-                                <Text style={styles.lastUpdated}>
-                                    Last updated: {lastUpdated}
-                                </Text>
+                            {loading ? (
+                                <ActivityIndicator color="#FFFFFF" size="small" />
+                            ) : (
+                                <Text style={styles.refreshIcon}>↻</Text>
                             )}
-                        </View>
-                    )}
+                            <Text style={styles.refreshText}>
+                                {loading ? 'Updating...' : 'Refresh Rates'}
+                            </Text>
+                        </TouchableOpacity>
+                    </View>
 
-                    {/* Refresh Button */}
-                    <TouchableOpacity
-                        style={styles.refreshButton}
-                        onPress={fetchExchangeRate}
-                        disabled={loading}
-                    >
-                        {loading ? (
-                            <ActivityIndicator color="#FFFFFF" size="small" />
-                        ) : (
-                            <Text style={styles.refreshIcon}>↻</Text>
-                        )}
-                        <Text style={styles.refreshText}>
-                            {loading ? 'Updating...' : 'Refresh Rates'}
+                    {/* Disclaimer */}
+                    <View style={styles.disclaimer}>
+                        <Text style={styles.disclaimerText}>
+                            Exchange rates are indicative and may vary from actual market rates.
+                            For precise rates, consult your bank or financial institution.
                         </Text>
-                    </TouchableOpacity>
+                    </View>
+
+                    {/* Currency Pickers */}
+                    <CurrencyPicker
+                        visible={showFromPicker}
+                        onClose={() => setShowFromPicker(false)}
+                        onSelect={setFromCurrency}
+                        selectedCurrency={fromCurrency}
+                    />
+
+                    <CurrencyPicker
+                        visible={showToPicker}
+                        onClose={() => setShowToPicker(false)}
+                        onSelect={setToCurrency}
+                        selectedCurrency={toCurrency}
+                    />
                 </View>
-
-                {/* Disclaimer */}
-                <View style={styles.disclaimer}>
-                    <Text style={styles.disclaimerText}>
-                        Exchange rates are indicative and may vary from actual market rates.
-                        For precise rates, consult your bank or financial institution.
-                    </Text>
-                </View>
-
-                {/* Currency Pickers */}
-                <CurrencyPicker
-                    visible={showFromPicker}
-                    onClose={() => setShowFromPicker(false)}
-                    onSelect={setFromCurrency}
-                    selectedCurrency={fromCurrency}
-                />
-
-                <CurrencyPicker
-                    visible={showToPicker}
-                    onClose={() => setShowToPicker(false)}
-                    onSelect={setToCurrency}
-                    selectedCurrency={toCurrency}
-                />
+            </ScrollView>
+            <View style={styles.bottomBar}>
+                <BottomBar />
             </View>
-        </ScrollView>
+        </SafeAreaView>
     );
 };
 
@@ -508,6 +510,16 @@ const styles = StyleSheet.create({
         color: '#4A5568',
         minWidth: 40,
         textAlign: 'right',
+    },
+    bottomBar: {
+        position: 'absolute',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        backgroundColor: '#fff',
+        padding: 10,
+        borderTopWidth: 1,
+        borderColor: '#ddd',
     },
 });
 

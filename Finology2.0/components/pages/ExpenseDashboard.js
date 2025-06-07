@@ -9,6 +9,7 @@ import {
     FlatList,
     Dimensions,
     RefreshControl,
+    Modal,
 } from 'react-native';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { BallIndicator } from 'react-native-indicators';
@@ -21,6 +22,8 @@ const ExpenseDashboard = ({ expenses = [], isLoading = false, onRefresh, refresh
     const [totalExpenses, setTotalExpenses] = useState(0);
     const [monthlyExpenses, setMonthlyExpenses] = useState(0);
     const [refreshing, setRefreshing] = useState(false);
+    const [showMonthPicker, setShowMonthPicker] = useState(false);
+    const [datePickerSelectedDate, setDatePickerSelectedDate] = useState(new Date());
 
     const months = [
         'January', 'February', 'March', 'April', 'May', 'June',
@@ -41,6 +44,27 @@ const ExpenseDashboard = ({ expenses = [], isLoading = false, onRefresh, refresh
         'Other': { color: '#85C1E9', icon: 'package-variant' },
     };
 
+    // Generate months for the picker (current year and previous year)
+    const generateMonthOptions = () => {
+        const monthOptions = [];
+        const currentYear = new Date().getFullYear();
+
+        // Add months for current and previous year
+        for (let year = currentYear; year >= currentYear - 1; year--) {
+            for (let month = 11; month >= 0; month--) {
+                monthOptions.push({
+                    year,
+                    month,
+                    display: `${months[month]} ${year}`,
+                    value: new Date(year, month, 1)
+                });
+            }
+        }
+        return monthOptions;
+    };
+
+    const monthOptions = generateMonthOptions();
+
     // Group expenses whenever expenses data changes
     useEffect(() => {
         if (expenses && expenses.length > 0) {
@@ -51,13 +75,13 @@ const ExpenseDashboard = ({ expenses = [], isLoading = false, onRefresh, refresh
             setTotalExpenses(0);
             setMonthlyExpenses(0);
         }
-    }, [expenses, viewMode, selectedMonth, selectedYear]);
+    }, [expenses, viewMode, selectedMonth, selectedYear, datePickerSelectedDate]);
 
     const calculateTotals = (expenseList) => {
         let total = 0;
         let monthly = 0;
-        const currentMonth = new Date().getMonth();
-        const currentYear = new Date().getFullYear();
+        const selectedMonthFromPicker = datePickerSelectedDate.getMonth();
+        const selectedYearFromPicker = datePickerSelectedDate.getFullYear();
 
         expenseList.forEach(expense => {
             const dateObj = new Date(expense.date);
@@ -66,8 +90,8 @@ const ExpenseDashboard = ({ expenses = [], isLoading = false, onRefresh, refresh
 
             total += expense.amount;
 
-            // Calculate current month expenses
-            if (expenseMonth === currentMonth && expenseYear === currentYear) {
+            // Calculate expenses for selected month from date picker
+            if (expenseMonth === selectedMonthFromPicker && expenseYear === selectedYearFromPicker) {
                 monthly += expense.amount;
             }
         });
@@ -133,9 +157,65 @@ const ExpenseDashboard = ({ expenses = [], isLoading = false, onRefresh, refresh
         return new Date(date).toLocaleDateString(undefined, options);
     }
 
+    const formatSelectedMonth = () => {
+        return `${months[datePickerSelectedDate.getMonth()]} ${datePickerSelectedDate.getFullYear()}`;
+    };
+
     const getCategoryConfig = (category) => {
         return categoryConfig[category] || { color: '#85C1E9', icon: 'package-variant' };
     };
+
+    const MonthPickerModal = () => (
+        <Modal
+            visible={showMonthPicker}
+            transparent={true}
+            animationType="slide"
+            onRequestClose={() => setShowMonthPicker(false)}
+        >
+            <View style={styles.modalOverlay}>
+                <View style={styles.modalContainer}>
+                    <View style={styles.modalHeader}>
+                        <Text style={styles.modalTitle}>Select Month</Text>
+                        <TouchableOpacity
+                            onPress={() => setShowMonthPicker(false)}
+                            style={styles.closeButton}
+                        >
+                            <MaterialCommunityIcons name="close" size={24} color="#666" />
+                        </TouchableOpacity>
+                    </View>
+
+                    <FlatList
+                        data={monthOptions}
+                        keyExtractor={(item) => `${item.year}-${item.month}`}
+                        renderItem={({ item }) => (
+                            <TouchableOpacity
+                                style={[
+                                    styles.monthOption,
+                                    datePickerSelectedDate.getFullYear() === item.year &&
+                                    datePickerSelectedDate.getMonth() === item.month &&
+                                    styles.selectedMonthOption
+                                ]}
+                                onPress={() => {
+                                    setDatePickerSelectedDate(item.value);
+                                    setShowMonthPicker(false);
+                                }}
+                            >
+                                <Text style={[
+                                    styles.monthOptionText,
+                                    datePickerSelectedDate.getFullYear() === item.year &&
+                                    datePickerSelectedDate.getMonth() === item.month &&
+                                    styles.selectedMonthOptionText
+                                ]}>
+                                    {item.display}
+                                </Text>
+                            </TouchableOpacity>
+                        )}
+                        showsVerticalScrollIndicator={false}
+                    />
+                </View>
+            </View>
+        </Modal>
+    );
 
     const ExpenseCard = ({ expense }) => {
         const config = getCategoryConfig(expense.category);
@@ -207,7 +287,7 @@ const ExpenseDashboard = ({ expenses = [], isLoading = false, onRefresh, refresh
     }
 
     // Calculate category totals only when expenses exist
-    const categoryTotals = expenses && expenses.length > 0 
+    const categoryTotals = expenses && expenses.length > 0
         ? expenses.reduce((acc, expense) => {
             acc[expense.category] = (acc[expense.category] || 0) + expense.amount;
             return acc;
@@ -217,15 +297,10 @@ const ExpenseDashboard = ({ expenses = [], isLoading = false, onRefresh, refresh
     return (
         <View style={styles.container}>
             {/* Summary Cards - Total and Monthly Expense */}
+            <Text style={styles.headerText}>Overview</Text>
             <View style={styles.topSummaryContainer}>
                 <View style={styles.summaryRow}>
                     <View style={[styles.topSummaryCard, { backgroundColor: '#2196F3' }]}>
-                        <MaterialCommunityIcons
-                            name="wallet"
-                            size={32}
-                            color="white"
-                            style={styles.topSummaryIcon}
-                        />
                         <View style={styles.topSummaryContent}>
                             <Text style={styles.topSummaryLabel}>Total Expenses</Text>
                             <Text style={styles.topSummaryAmount}>{formatCurrency(totalExpenses)}</Text>
@@ -233,21 +308,31 @@ const ExpenseDashboard = ({ expenses = [], isLoading = false, onRefresh, refresh
                     </View>
 
                     <View style={[styles.topSummaryCard, { backgroundColor: '#4CAF50' }]}>
-                        <MaterialCommunityIcons
-                            name="calendar-month"
-                            size={32}
-                            color="white"
-                            style={styles.topSummaryIcon}
-                        />
                         <View style={styles.topSummaryContent}>
-                            <Text style={styles.topSummaryLabel}>This Month</Text>
+                            <Text style={styles.topSummaryLabel}>{formatSelectedMonth()}</Text>
                             <Text style={styles.topSummaryAmount}>{formatCurrency(monthlyExpenses)}</Text>
                         </View>
+                    </View>
+
+                    <View style={styles.datePickerContainer}>
+                        <TouchableOpacity
+                            style={styles.datePickerButton}
+                            onPress={() => setShowMonthPicker(true)}
+                        >
+                            <MaterialCommunityIcons
+                                name="calendar-month"
+                                size={30}
+                                color="#2196F3"
+                                style={styles.datePickerIcon}
+                            />
+                        </TouchableOpacity>
                     </View>
                 </View>
             </View>
 
+
             {/* Category Summary Cards */}
+            <Text style={styles.headerText}>Categories</Text>
             <ScrollView
                 style={styles.summaryContainer}
                 horizontal
@@ -264,7 +349,7 @@ const ExpenseDashboard = ({ expenses = [], isLoading = false, onRefresh, refresh
                 {Object.entries(categoryTotals).map(([category, total]) => {
                     const config = getCategoryConfig(category);
                     const cardStyle = [styles.summaryCard, { backgroundColor: config.color }];
-                    
+
                     return (
                         <View key={category} style={cardStyle}>
                             <MaterialCommunityIcons
@@ -314,6 +399,7 @@ const ExpenseDashboard = ({ expenses = [], isLoading = false, onRefresh, refresh
                     </View>
                 )}
             </ScrollView>
+            <MonthPickerModal />
         </View>
     );
 };
@@ -322,6 +408,11 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: '#f5f5f5',
+    },
+    headerText:{
+        fontSize: 20,
+        paddingHorizontal: 10,
+        fontWeight: 'bold',
     },
     contentLoaderContainer: {
         flex: 1,
@@ -338,11 +429,80 @@ const styles = StyleSheet.create({
         color: '#666',
         fontWeight: '500',
     },
+    // Date Picker Styles
+    datePickerContainer: {
+        width: '15%',
+        // backgroundColor: 'white',
+        paddingHorizontal: 0,
+        paddingVertical: 10,
+    },
+    datePickerButton: {
+        width: '100%',
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingHorizontal: 0,
+        paddingVertical: 10,
+    },
+    datePickerIcon: {
+        marginRight: 8,
+    },
+    datePickerText: {
+        flex: 1,
+        fontSize: 16,
+        color: '#333',
+        fontWeight: '500',
+    },
+    modalOverlay: {
+        flex: 1,
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    modalContainer: {
+        backgroundColor: 'white',
+        borderRadius: 12,
+        width: '80%',
+        maxHeight: '70%',
+        paddingBottom: 16,
+    },
+    modalHeader: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        padding: 16,
+        borderBottomWidth: 1,
+        borderBottomColor: '#e0e0e0',
+    },
+    modalTitle: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        color: '#333',
+    },
+    closeButton: {
+        padding: 4,
+    },
+    monthOption: {
+        paddingHorizontal: 16,
+        paddingVertical: 12,
+        borderBottomWidth: 1,
+        borderBottomColor: '#f0f0f0',
+    },
+    selectedMonthOption: {
+        backgroundColor: '#e3f2fd',
+    },
+    monthOptionText: {
+        fontSize: 16,
+        color: '#333',
+    },
+    selectedMonthOptionText: {
+        color: '#2196F3',
+        fontWeight: '500',
+    },
     // New styles for top summary cards
     topSummaryContainer: {
-        backgroundColor: 'white',
-        paddingVertical: 20,
-        paddingHorizontal: 15,
+        // backgroundColor: 'white',
+        paddingVertical: 10,
+        paddingHorizontal: 7,
         borderBottomWidth: 1,
         borderBottomColor: '#e0e0e0',
     },
@@ -355,7 +515,7 @@ const styles = StyleSheet.create({
         flex: 1,
         flexDirection: 'column',
         alignItems: 'center',
-        padding: 10,
+        padding: 11,
         borderRadius: 15,
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
@@ -382,9 +542,8 @@ const styles = StyleSheet.create({
     summaryContainer: {
         width: '100%',
         maxHeight: 120,
-        backgroundColor: 'white',
-        paddingVertical: 15,
-        paddingHorizontal: 10,
+        paddingVertical: 10,
+        paddingHorizontal: 5,
         borderBottomWidth: 1,
         borderBottomColor: '#e0e0e0',
     },

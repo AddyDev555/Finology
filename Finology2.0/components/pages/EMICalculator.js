@@ -10,6 +10,7 @@ import {
     Dimensions,
 } from 'react-native';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import BottomBar from '../ui/BottomBar';
 
 const { width } = Dimensions.get('window');
 
@@ -266,7 +267,7 @@ const EMICalculatorPage = () => {
 
                 {/* Input Form */}
                 <View style={styles.formContainer}>
-                    <Text style={styles.sectionTitle}>Input Details</Text>
+                    {/* <Text style={styles.sectionTitle}>Input Details</Text> */}
 
                     {/* Loan Amount */}
                     {calculatorMode !== 'loan' && (
@@ -491,6 +492,9 @@ const EMICalculatorPage = () => {
                     </View>
                 )}
             </ScrollView>
+            <View style={styles.bottomBar}>
+                <BottomBar />
+            </View>
         </SafeAreaView>
     );
 };
@@ -640,7 +644,6 @@ const styles = StyleSheet.create({
     },
     buttonContainer: {
         flexDirection: 'row',
-        marginTop: 10,
     },
     actionButton: {
         flexDirection: 'row',
@@ -775,6 +778,16 @@ const styles = StyleSheet.create({
         color: '#666',
         textAlign: 'center',
         marginTop: 5,
+    },
+    bottomBar: {
+        position: 'absolute',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        backgroundColor: '#fff',
+        padding: 10,
+        borderTopWidth: 1,
+        borderColor: '#ddd',
     },
 });
 
