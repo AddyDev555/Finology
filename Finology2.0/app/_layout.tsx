@@ -28,6 +28,7 @@ export default function RootLayout() {
         <Stack.Screen name="backlog-page" />
         <Stack.Screen name="emi-calculator" />
         <Stack.Screen name="currency-converter" />
+        <Stack.Screen name="notification" />
       </Stack>
       <Toast />
       <StatusBar style="auto" />

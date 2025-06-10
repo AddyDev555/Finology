@@ -13,7 +13,7 @@ import {
 } from 'react-native';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { BallIndicator } from 'react-native-indicators';
-import { BarChart, LineChart, PieChart, PopulationPyramid, RadarChart } from "react-native-gifted-charts";
+import { BarChart, LineChart, PieChart } from "react-native-gifted-charts";
 
 
 const ExpenseDashboard = ({ expenses = [], isLoading = false, onRefresh, refreshKey }) => {
@@ -30,28 +30,6 @@ const ExpenseDashboard = ({ expenses = [], isLoading = false, onRefresh, refresh
 
     // Group expenses by category
     const categoryTotal = {};
-
-    expenses.forEach(item => {
-        if (categoryTotal[item.category]) {
-            categoryTotal[item.category] += item.amount;
-        } else {
-            categoryTotal[item.category] = item.amount;
-        }
-    });
-
-    // PieChart & BarChart data
-    const pieData = Object.keys(categoryTotal).map((category, i) => ({
-        value: categoryTotal[category],
-        label: category,
-        color: ['#f94144', '#f3722c', '#43aa8b', '#577590', '#f9c74f'][i % 5],
-    }));
-
-    const barData = Object.keys(categoryTotal).map((category, i) => ({
-        value: categoryTotal[category],
-        label: category,
-        frontColor: ['#f94144', '#f3722c', '#43aa8b', '#577590', '#f9c74f'][i % 5],
-    }));
-
 
     const months = [
         'January', 'February', 'March', 'April', 'May', 'June',
@@ -95,6 +73,34 @@ const ExpenseDashboard = ({ expenses = [], isLoading = false, onRefresh, refresh
         'Other': { color: '#85C1E9', icon: 'dots-horizontal' }
     };
 
+    expenses.forEach(item => {
+        if (categoryTotal[item.category]) {
+            categoryTotal[item.category] += item.amount;
+        } else {
+            categoryTotal[item.category] = item.amount;
+        }
+    });
+
+    const getColor = (category) => categoryConfig[category]?.color || '#85C1E9';
+
+    // PieChart & BarChart data - Fixed to avoid key prop issues
+    const pieData = Object.keys(categoryTotal).map((category, i) => {
+        const dataPoint = {
+            value: categoryTotal[category],
+            label: category,
+            color: getColor(category),
+        };
+        return dataPoint;
+    });
+
+    const barData = Object.keys(categoryTotal).map((category, i) => {
+        const dataPoint = {
+            value: categoryTotal[category],
+            label: category,
+            frontColor: getColor(category),
+        };
+        return dataPoint;
+    });
 
     // Generate months for the picker (current year and previous year)
     const generateMonthOptions = () => {
@@ -279,14 +285,19 @@ const ExpenseDashboard = ({ expenses = [], isLoading = false, onRefresh, refresh
                 <View style={styles.cardHeader}>
                     <View style={styles.amountContainer}>
                         <Text style={styles.amountText}>{formatCurrency(expense.amount)}</Text>
-                        <View style={badgeStyle}>
-                            <MaterialCommunityIcons
-                                name={config.icon}
-                                size={14}
-                                color="white"
-                                style={styles.categoryIcon}
-                            />
-                            <Text style={styles.categoryText}>{expense.category}</Text>
+                        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                            <View style={badgeStyle}>
+                                <MaterialCommunityIcons
+                                    name={config.icon}
+                                    size={14}
+                                    color="white"
+                                    style={styles.categoryIcon}
+                                />
+                                <Text style={styles.categoryText}>{expense.category}</Text>
+                            </View>
+                            <View>
+                                <Text style={styles.businessText}>{expense.business}</Text>
+                            </View>
                         </View>
                     </View>
                     {/* Show full date string from backend */}
@@ -294,7 +305,6 @@ const ExpenseDashboard = ({ expenses = [], isLoading = false, onRefresh, refresh
                 </View>
 
                 <View style={styles.cardBody}>
-                    <Text style={styles.businessText}>{expense.business}</Text>
                     <Text style={styles.descriptionText}>{expense.description}</Text>
                 </View>
             </View>
@@ -316,9 +326,10 @@ const ExpenseDashboard = ({ expenses = [], isLoading = false, onRefresh, refresh
                     <Text style={styles.dayTitle}>{dateKey}</Text>
                     <Text style={styles.dayTotal}>{formatCurrency(dayData.total)}</Text>
                 </View>
-                {sortedExpenses.map(expense => (
-                    <ExpenseCard key={expense.id} expense={expense} />
-                ))}
+                {sortedExpenses.map(expense => {
+                    const { key, ...expenseProps } = expense;
+                    return <ExpenseCard key={expense.id} expense={expenseProps} />;
+                })}
             </View>
         );
     };
@@ -470,13 +481,16 @@ const ExpenseDashboard = ({ expenses = [], isLoading = false, onRefresh, refresh
                     }
                 >
                     {sortedKeys.length > 0 ? (
-                        sortedKeys.map(dateKey => (
-                            <DaySection
-                                key={dateKey}
-                                dateKey={dateKey}
-                                dayData={groupedExpenses[dateKey]}
-                            />
-                        ))
+                        sortedKeys.map(dateKey => {
+                            const { key, ...dayDataProps } = groupedExpenses[dateKey];
+                            return (
+                                <DaySection
+                                    key={dateKey}
+                                    dateKey={dateKey}
+                                    dayData={dayDataProps}
+                                />
+                            );
+                        })
                     ) : (
                         <View style={styles.emptyContainer}>
                             <MaterialCommunityIcons
@@ -506,28 +520,45 @@ const ExpenseDashboard = ({ expenses = [], isLoading = false, onRefresh, refresh
                     }
                 >
                     <View style={dashboardStyles.tabContentWrapper}>
-                        <Text style={dashboardStyles.chartTitle}>Category Distribution</Text>
-                        <PieChart
-                            data={pieData}
-                            donut
-                            radius={120}
-                            innerRadius={60}
-                            showText
-                            textColor="white"
-                            focusOnPress
-                        />
+                        <View style={dashboardStyles.chart}>
+                            <Text style={dashboardStyles.chartTitle}>Category Distribution</Text>
+                            {pieData.length > 0 ? (
+                                <PieChart
+                                    data={pieData}
+                                    donut
+                                    radius={130}
+                                    innerRadius={60}
+                                    showValuesAsLabels
+                                    textColor="white"
+                                    focusOnPress
+                                    textSize={12}
+                                />
+                            ) : (
+                                <View style={styles.emptyChartContainer}>
+                                    <Text style={styles.emptyChartText}>No data available</Text>
+                                </View>
+                            )}
+                        </View>
 
                         {/* Bar Chart */}
-                        <Text style={dashboardStyles.chartTitle}>Spending per Category</Text>
-                        <BarChart
-                            data={barData}
-                            barWidth={30}
-                            spacing={20}
-                            roundedTop
-                            isAnimated
-                        />
+                        <View style={dashboardStyles.chart}>
+                            <Text style={dashboardStyles.chartTitle}>Spending per Category</Text>
+                            {barData.length > 0 ? (
+                                <BarChart
+                                    data={barData}
+                                    barWidth={30}
+                                    spacing={20}
+                                    roundedTop
+                                    isAnimated
+                                />
+                            ) : (
+                                <View style={styles.emptyChartContainer}>
+                                    <Text style={styles.emptyChartText}>No data available</Text>
+                                </View>
+                            )}
+                        </View>
 
-                        {/* Optional Line Chart: Trend (dummy for now) */}
+                        {/* Optional Line Chart: Trend (dummy for now)
                         <Text style={dashboardStyles.chartTitle}>Spending Trend (Example)</Text>
                         <LineChart
                             data={[0, 200, 600, 900, 400, 1200, 500]}
@@ -536,7 +567,7 @@ const ExpenseDashboard = ({ expenses = [], isLoading = false, onRefresh, refresh
                             hideDataPoints
                             isAnimated
                             maxValue={2000}
-                        />
+                        /> */}
                     </View>
                 </ScrollView>
 
@@ -594,6 +625,15 @@ const dashboardStyles = StyleSheet.create({
         fontWeight: '600',
         color: '#4B0082',
         marginBottom: 10,
+    },
+    chartTitle: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        color: 'black',
+        marginBottom: 10,
+    },
+    chart: {
+        marginBottom: 20,
     },
 });
 
@@ -841,10 +881,10 @@ const styles = StyleSheet.create({
         paddingTop: 10,
     },
     businessText: {
-        fontSize: 16,
+        fontSize: 15,
         fontWeight: '600',
         color: '#333',
-        marginBottom: 5,
+        marginLeft: 5,
     },
     descriptionText: {
         fontSize: 14,
