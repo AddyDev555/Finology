@@ -315,7 +315,7 @@ const BacklogPage = () => {
 
                 {isLoading ? (
                     <View style={styles.loadingContainer}>
-                        <BallIndicator color="#E91E63" size={30} />
+                        <BallIndicator color="#8B5CF6" size={30} />
                         <Text style={styles.loadingText}>Processing...</Text>
                     </View>
                 ) : (
@@ -354,7 +354,7 @@ const BacklogPage = () => {
                     <Text style={styles.totalPending}>Loading...</Text>
                 </View>
                 <View style={styles.loadingScreen}>
-                    <BallIndicator color="#E91E63" size={60} />
+                    <BallIndicator color="#8B5CF6" size={60} />
                 </View>
             </SafeAreaView>
         );
@@ -368,7 +368,7 @@ const BacklogPage = () => {
                     <Text style={styles.totalPending}>Total Pending: {formatCurrency(totalPending)}</Text>
                 </View>
                 <View style={{ marginLeft: 'auto' }}>
-                    <Calculator color="#E91E63" />
+                    <Calculator color="#8B5CF6" />
                 </View>
             </View>
 
@@ -529,7 +529,7 @@ const BacklogPage = () => {
 
 const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: '#f5f5f5' },
-    header: { backgroundColor: '#E91E63', padding: 20, paddingTop: 40, flexDirection: 'row', alignItems: 'center' },
+    header: { backgroundColor: '#8B5CF6', padding: 20, paddingTop: 40, flexDirection: 'row', alignItems: 'center' },
     headerTitle: { fontSize: 24, fontWeight: 'bold', color: 'white', marginBottom: 10 },
     totalPending: { fontSize: 16, color: 'rgba(255, 255, 255, 0.9)', fontWeight: '600' },
     content: { flex: 1 },
@@ -571,12 +571,12 @@ const styles = StyleSheet.create({
     textArea: { height: 80, textAlignVertical: 'top' },
     categorySelector: { flexDirection: 'row', paddingVertical: 5, marginBottom: 15 },
     categoryOption: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 15, paddingVertical: 10, marginRight: 10, borderRadius: 20, borderWidth: 2, backgroundColor: 'white', borderColor: '#e0e0e0' },
-    selectedCategory: { backgroundColor: '#E91E63' },
+    selectedCategory: { backgroundColor: '#8B5CF6' },
     categoryOptionText: { marginLeft: 8, fontSize: 14, fontWeight: '600', color: '#666' },
     selectedCategoryText: { color: 'white' },
     dateButton: { flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderColor: '#e0e0e0', borderRadius: 8, padding: 12, backgroundColor: '#f9f9f9', marginBottom: 15 },
     dateButtonText: { marginLeft: 10, fontSize: 16, color: '#333' },
-    submitButton: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', backgroundColor: '#E91E63', paddingVertical: 15, paddingHorizontal: 20, borderRadius: 8, marginTop: 10 },
+    submitButton: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', backgroundColor: '#8B5CF6', paddingVertical: 15, paddingHorizontal: 20, borderRadius: 8, marginTop: 10 },
     submitButtonText: { marginLeft: 8, fontSize: 16, fontWeight: '600', color: 'white' },
     cancelButton: { alignItems: 'center', paddingVertical: 10, marginTop: 10 },
     cancelButtonText: { fontSize: 16, color: '#666', textDecorationLine: 'underline' },

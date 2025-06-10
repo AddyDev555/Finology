@@ -14,7 +14,12 @@ import {
 import { Picker } from '@react-native-picker/picker';
 import Toast from 'react-native-toast-message';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import Icon from 'react-native-vector-icons/FontAwesome';
+import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
+import MaterialCommunityIcon from 'react-native-vector-icons/MaterialCommunityIcons';
 import BottomBar from '../ui/BottomBar';
+import Ionicons from 'react-native-vector-icons/Ionicons';
+import Calculator from '../ui/Calculator';
 
 const ExpenseEntryPage = () => {
     const [amount, setAmount] = useState('');
@@ -23,33 +28,86 @@ const ExpenseEntryPage = () => {
     const [category, setCategory] = useState('');
     const [currentDateTime, setCurrentDateTime] = useState(new Date());
     const [userData, setUserData] = useState({});
+    const [showForm, setShowForm] = useState(false);
+    const [searchQuery, setSearchQuery] = useState(''); // Added search query state
 
-    // Common expense categories
-    const categories = [
-        'Food & Dining',
-        'Transportation',
-        'Shopping',
-        'Entertainment',
-        'Bills & Utilities',
-        'Healthcare',
-        'Travel',
-        'Personal Care',
-        'Education',
-        'Other'
+    // Categories with React Native Vector Icons
+    const categoriesWithIcons = [
+        { name: 'Food & Dining', icon: 'cutlery', iconLibrary: 'FontAwesome', color: '#FF6B6B' },
+        { name: 'Transportation', icon: 'car', iconLibrary: 'FontAwesome', color: '#4ECDC4' },
+        { name: 'Shopping', icon: 'shopping-bag', iconLibrary: 'FontAwesome', color: '#45B7D1' },
+        { name: 'Entertainment', icon: 'gamepad', iconLibrary: 'FontAwesome', color: '#4CAF50' },
+        { name: 'Bills & Utilities', icon: 'bolt', iconLibrary: 'FontAwesome', color: '#FF9800' },
+        { name: 'Healthcare', icon: 'hospital-o', iconLibrary: 'FontAwesome', color: '#4B0082' },
+        { name: 'Travel', icon: 'plane', iconLibrary: 'FontAwesome', color: '#98D8C8' },
+        { name: 'Personal Care', icon: 'heart', iconLibrary: 'FontAwesome', color: '#F7DC6F' },
+        { name: 'Education', icon: 'graduation-cap', iconLibrary: 'FontAwesome', color: '#BB8FCE' },
+        { name: 'Housing & Rent', icon: 'home', iconLibrary: 'FontAwesome', color: '#F4A460' },
+        { name: 'Clothing & Fashion', icon: 'shopping-cart', iconLibrary: 'FontAwesome', color: '#FF69B4' },
+        { name: 'Fuel & Gas', icon: 'tint', iconLibrary: 'FontAwesome', color: '#A52A2A' },
+        { name: 'Coffee & Beverages', icon: 'coffee', iconLibrary: 'FontAwesome', color: '#D2691E' },
+        { name: 'Movies & Cinema', icon: 'film', iconLibrary: 'FontAwesome', color: '#9C27B0' },
+        { name: 'Music & Audio', icon: 'music', iconLibrary: 'FontAwesome', color: '#3F51B5' },
+        { name: 'Fitness & Gym', icon: 'heartbeat', iconLibrary: 'FontAwesome', color: '#FF1493' },
+        { name: 'Pharmacy & Medicine', icon: 'medkit', iconLibrary: 'FontAwesome', color: '#008080' },
+        { name: 'Mobile & Phone', icon: 'mobile', iconLibrary: 'FontAwesome', color: '#607D8B' },
+        { name: 'Internet & WiFi', icon: 'wifi', iconLibrary: 'FontAwesome', color: '#03A9F4' },
+        { name: 'ATM & Banking', icon: 'credit-card', iconLibrary: 'FontAwesome', color: '#795548' },
+        { name: 'Gifts & Donations', icon: 'gift', iconLibrary: 'FontAwesome', color: '#E91E63' },
+        { name: 'Baby & Kids', icon: 'child', iconLibrary: 'FontAwesome', color: '#FFB6C1' },
+        { name: 'Pets & Animals', icon: 'paw', iconLibrary: 'FontAwesome', color: '#8BC34A' },
+        { name: 'Home Maintenance', icon: 'wrench', iconLibrary: 'FontAwesome', color: '#A9A9A9' },
+        { name: 'Electronics & Tech', icon: 'laptop', iconLibrary: 'FontAwesome', color: '#00008B' },
+        { name: 'Photography', icon: 'camera', iconLibrary: 'FontAwesome', color: '#FF4500' },
+        { name: 'Books & Reading', icon: 'book', iconLibrary: 'FontAwesome', color: '#6A5ACD' },
+        { name: 'Art & Craft', icon: 'paint-brush', iconLibrary: 'FontAwesome', color: '#FF6347' },
+        { name: 'Garden & Plants', icon: 'leaf', iconLibrary: 'FontAwesome', color: '#228B22' },
+        { name: 'Laundry & Cleaning', icon: 'local-laundry-service', iconLibrary: 'MaterialIcons', color: '#ADD8E6' },
+        { name: 'Insurance', icon: 'security', iconLibrary: 'MaterialIcons', color: '#808080' },
+        { name: 'Alcohol & Drinks', icon: 'glass', iconLibrary: 'FontAwesome', color: '#C71585' },
+        { name: 'Other', icon: 'ellipsis-h', iconLibrary: 'FontAwesome', color: '#85C1E9' }
     ];
+
+    // Filter categories based on search query
+    const filteredCategories = categoriesWithIcons.filter(categoryItem =>
+        categoryItem.name.toLowerCase().includes(searchQuery.toLowerCase())
+    );
 
     // Common business suggestions based on category
     const businessSuggestions = {
-        'Food & Dining': ['McDonald\'s', 'Starbucks', 'Pizza Hut', 'Local Restaurant'],
-        'Transportation': ['Car Wash', 'Gas Station', 'Uber', 'Parking'],
-        'Shopping': ['Walmart', 'Target', 'Amazon', 'Local Store'],
-        'Entertainment': ['Movie Theater', 'Concert', 'Sports Event', 'Gaming'],
-        'Bills & Utilities': ['Electric Company', 'Internet Provider', 'Phone Bill', 'Water Bill'],
-        'Healthcare': ['Pharmacy', 'Doctor Visit', 'Hospital', 'Dentist'],
-        'Travel': ['Hotel', 'Airline', 'Car Rental', 'Tourist Attraction'],
-        'Personal Care': ['Salon', 'Spa', 'Gym', 'Beauty Store'],
-        'Education': ['Bookstore', 'Online Course', 'Tuition', 'Supplies'],
-        'Other': ['ATM Fee', 'Bank Charge', 'Miscellaneous', 'Cash Expense']
+        'Food & Dining': ['McDonald\'s', 'Starbucks', 'Pizza Hut', 'Local Restaurant', 'KFC', 'Subway'],
+        'Transportation': ['Car Wash', 'Gas Station', 'Uber', 'Parking', 'Metro', 'Bus Ticket'],
+        'Shopping': ['Walmart', 'Target', 'Amazon', 'Local Store', 'Mall', 'Online Shopping'],
+        'Entertainment': ['Movie Theater', 'Concert', 'Sports Event', 'Gaming', 'Amusement Park', 'Netflix'],
+        'Bills & Utilities': ['Electric Company', 'Internet Provider', 'Phone Bill', 'Water Bill', 'Gas Bill', 'Cable TV'],
+        'Healthcare': ['Pharmacy', 'Doctor Visit', 'Hospital', 'Dentist', 'Lab Test', 'Eye Checkup'],
+        'Travel': ['Hotel', 'Airline', 'Car Rental', 'Tourist Attraction', 'Train Ticket', 'Travel Insurance'],
+        'Personal Care': ['Salon', 'Spa', 'Gym', 'Beauty Store', 'Barber Shop', 'Massage'],
+        'Education': ['Bookstore', 'Online Course', 'Tuition', 'Supplies', 'Library', 'Certification'],
+        'Housing & Rent': ['Monthly Rent', 'Property Tax', 'Home Insurance', 'Maintenance', 'Security Deposit', 'HOA Fee'],
+        'Clothing & Fashion': ['Clothing Store', 'Shoes', 'Accessories', 'Jewelry', 'Watch', 'Designer Store'],
+        'Fuel & Gas': ['Gas Station', 'Petrol Pump', 'Diesel', 'CNG', 'Fuel Card', 'Vehicle Fuel'],
+        'Coffee & Beverages': ['Starbucks', 'Local Café', 'Tea Shop', 'Juice Bar', 'Energy Drink', 'Coffee Shop'],
+        'Movies & Cinema': ['Movie Theater', 'IMAX', 'Drive-in', 'Film Festival', 'Movie Rental', 'Cinema Hall'],
+        'Music & Audio': ['Spotify', 'Concert Ticket', 'Music Store', 'Headphones', 'Speakers', 'Vinyl Records'],
+        'Fitness & Gym': ['Gym Membership', 'Personal Trainer', 'Yoga Class', 'Sports Equipment', 'Fitness App', 'Swimming Pool'],
+        'Pharmacy & Medicine': ['CVS', 'Walgreens', 'Local Pharmacy', 'Prescription', 'Over-the-counter', 'Medical Store'],
+        'Mobile & Phone': ['Phone Bill', 'Mobile Recharge', 'Phone Repair', 'New Phone', 'Phone Case', 'Telecom'],
+        'Internet & WiFi': ['Internet Bill', 'WiFi Setup', 'Router', 'Broadband', 'Data Plan', 'Network Provider'],
+        'ATM & Banking': ['ATM Fee', 'Bank Charge', 'Wire Transfer', 'Check Fee', 'Account Fee', 'Service Charge'],
+        'Gifts & Donations': ['Birthday Gift', 'Wedding Gift', 'Charity', 'Donation', 'Holiday Gift', 'Anniversary'],
+        'Baby & Kids': ['Baby Food', 'Diapers', 'Toys', 'Kids Clothes', 'Daycare', 'Baby Supplies'],
+        'Pets & Animals': ['Pet Food', 'Vet Visit', 'Pet Grooming', 'Pet Supplies', 'Pet Insurance', 'Pet Store'],
+        'Home Maintenance': ['Plumber', 'Electrician', 'Carpenter', 'Paint', 'Tools', 'Home Repair'],
+        'Electronics & Tech': ['Best Buy', 'Apple Store', 'Computer Store', 'Phone Store', 'Tech Repair', 'Electronics'],
+        'Photography': ['Camera Store', 'Photo Printing', 'Photography Equipment', 'Photo Studio', 'Camera Repair', 'Lens'],
+        'Books & Reading': ['Bookstore', 'Amazon Books', 'Library Fee', 'E-book', 'Magazine', 'Newspaper'],
+        'Art & Craft': ['Art Store', 'Craft Supplies', 'Art Class', 'Paint', 'Canvas', 'Craft Materials'],
+        'Garden & Plants': ['Garden Center', 'Plant Store', 'Seeds', 'Fertilizer', 'Garden Tools', 'Nursery'],
+        'Laundry & Cleaning': ['Dry Cleaner', 'Laundromat', 'Cleaning Supplies', 'Laundry Service', 'Detergent', 'Stain Removal'],
+        'Insurance': ['Car Insurance', 'Health Insurance', 'Life Insurance', 'Home Insurance', 'Premium Payment', 'Policy Fee'],
+        'Alcohol & Drinks': ['Liquor Store', 'Wine Shop', 'Bar', 'Brewery', 'Cocktail', 'Beer Store'],
+        'Other': ['ATM Fee', 'Bank Charge', 'Miscellaneous', 'Cash Expense', 'Unknown', 'General']
     };
 
     // Update date and time every second
@@ -82,9 +140,28 @@ const ExpenseEntryPage = () => {
         }
     }
 
-    useEffect(()=>{
+    useEffect(() => {
         handelUsername();
-    },[])
+    }, [])
+
+    // Handle category selection
+    const selectCategory = (selectedCategory) => {
+        setCategory(selectedCategory);
+        setShowForm(true);
+    };
+
+    // Handle back to categories
+    const backToCategories = () => {
+        setShowForm(false);
+        setCategory('');
+        setSearchQuery(''); // Clear search when going back
+        clearForm();
+    };
+
+    // Clear search function
+    const clearSearch = () => {
+        setSearchQuery('');
+    };
 
     // Validate and save expense
     const saveExpense = async () => {
@@ -148,12 +225,13 @@ const ExpenseEntryPage = () => {
                 type: 'success',
                 position: 'top',
                 text1: 'Success',
-                text2: `Expense of $${amount} saved successfully!`,
+                text2: `Expense of ₹${amount} saved successfully!`,
                 visibilityTime: 3000,
                 autoHide: true,
             });
 
             clearForm();
+            setShowForm(false);
         } catch (error) {
             console.error('Error saving expense:', error);
             Toast.show({
@@ -172,12 +250,17 @@ const ExpenseEntryPage = () => {
         setAmount('');
         setDescription('');
         setBusinessName('');
-        setCategory('');
     };
 
     // Handle business name suggestion selection
     const selectBusinessSuggestion = (business) => {
         setBusinessName(business);
+    };
+
+    // Get selected category icon
+    const getSelectedCategoryIcon = () => {
+        const selectedCat = categoriesWithIcons.find(cat => cat.name === category);
+        return selectedCat ? { icon: selectedCat.icon, library: selectedCat.iconLibrary, color: selectedCat.color } : { icon: 'ellipsis-h', library: 'FontAwesome' };
     };
 
     return (
@@ -193,109 +276,204 @@ const ExpenseEntryPage = () => {
                 >
                     {/* Header */}
                     <View style={styles.header}>
-                        <Text style={styles.headerTitle}>Add Expense</Text>
-                        <Text style={styles.dateTime}>{formatDateTime(currentDateTime)}</Text>
+                        <View style={styles.headerContent}>
+                            {showForm && (
+                                <TouchableOpacity
+                                    style={styles.backButton}
+                                    onPress={backToCategories}
+                                >
+                                    <Ionicons name="arrow-back" size={25} color="#000" style={styles.backButtonText} />
+                                </TouchableOpacity>
+                            )}
+                            <Text style={styles.headerTitle}>
+                                {showForm ? `${category}` : 'Add Expense'}
+                            </Text>
+                            <Text style={styles.dateTime}>{formatDateTime(currentDateTime)}</Text>
+                        </View>
+                        <View style={{ marginLeft: 'auto' }}>
+                            <Calculator color="#8B5CF6" />
+                        </View>
                     </View>
 
-                    {/* Form Container */}
-                    <View style={styles.formContainer}>
-
-                        {/* Amount Input */}
-                        <View style={styles.inputGroup}>
-                            <Text style={styles.label}>Amount *</Text>
-                            <View style={styles.amountContainer}>
-                                <Text style={styles.currencySymbol}>₹</Text>
+                    {!showForm ? (
+                        // Category Selection Screen
+                        <View style={styles.categoryContainer}>
+                            <View style={styles.searchContainer}>
+                                <MaterialCommunityIcon
+                                    name="magnify"
+                                    size={22}
+                                    color="#888"
+                                    style={styles.searchIcon}
+                                />
                                 <TextInput
-                                    style={styles.amountInput}
-                                    value={amount}
-                                    onChangeText={setAmount}
-                                    placeholder="0.00"
+                                    style={styles.searchInput}
+                                    placeholder="Search Categories..."
+                                    placeholderTextColor="#888"
+                                    value={searchQuery}
+                                    onChangeText={setSearchQuery}
+                                />
+                                {searchQuery.length > 0 && (
+                                    <TouchableOpacity onPress={clearSearch} style={styles.clearButton2}>
+                                        <MaterialCommunityIcon
+                                            name="close-circle"
+                                            size={20}
+                                            color="#888"
+                                        />
+                                    </TouchableOpacity>
+                                )}
+                            </View>
+                            
+                            {/* Show filtered results count */}
+                            {searchQuery.length > 0 && (
+                                <Text style={styles.resultsCount}>
+                                    {filteredCategories.length} categories found
+                                </Text>
+                            )}
+                            
+                            {/* No results message */}
+                            {searchQuery.length > 0 && filteredCategories.length === 0 && (
+                                <View style={styles.noResultsContainer}>
+                                    <MaterialCommunityIcon
+                                        name="magnify"
+                                        size={48}
+                                        color="#ccc"
+                                        style={styles.noResultsIcon}
+                                    />
+                                    <Text style={styles.noResultsText}>No categories found</Text>
+                                    <Text style={styles.noResultsSubtext}>
+                                        Try searching with different keywords
+                                    </Text>
+                                </View>
+                            )}
+                            
+                            <View style={styles.categoriesGrid}>
+                                {filteredCategories.map((categoryItem, index) => {
+                                    const IconComponent = categoryItem.iconLibrary === 'MaterialIcons' ? MaterialIcon :
+                                        categoryItem.iconLibrary === 'MaterialCommunityIcons' ? MaterialCommunityIcon : Icon;
+                                    return (
+                                        <TouchableOpacity
+                                            key={index}
+                                            style={styles.categoryCard}
+                                            onPress={() => selectCategory(categoryItem.name)}
+                                            activeOpacity={0.7}
+                                        >
+                                            <IconComponent
+                                                name={categoryItem.icon}
+                                                size={24}
+                                                color={categoryItem.color}
+                                                style={styles.categoryIcon}
+                                            />
+                                            <Text style={styles.categoryName}>{categoryItem.name}</Text>
+                                        </TouchableOpacity>
+                                    );
+                                })}
+                            </View>
+                        </View>
+                    ) : (
+                        // Expense Form
+                        <View style={styles.formContainer}>
+                            {/* Selected Category Display */}
+                            <View style={[styles.selectedCategoryContainer, { borderLeftColor: getSelectedCategoryIcon().color || '#8B5CF6' }]}>
+                                {(() => {
+                                    const selectedIcon = getSelectedCategoryIcon();
+                                    const IconComponent = selectedIcon.library === 'MaterialIcons' ? MaterialIcon :
+                                        selectedIcon.library === 'MaterialCommunityIcons' ? MaterialCommunityIcon : Icon;
+                                    return (
+                                        <IconComponent
+                                            name={selectedIcon.icon}
+                                            size={24}
+                                            color={selectedIcon.color || '#8B5CF6'}
+                                            style={styles.selectedCategoryIconStyle}
+                                        />
+                                    );
+                                })()}
+                                <View style={styles.selectedCategoryInfo}>
+                                    <Text style={styles.selectedCategoryLabel}>Category</Text>
+                                    <Text style={styles.selectedCategoryName}>{category}</Text>
+                                </View>
+                            </View>
+
+                            {/* Amount Input */}
+                            <View style={styles.inputGroup}>
+                                <Text style={styles.label}>Amount *</Text>
+                                <View style={styles.amountContainer}>
+                                    <Text style={styles.currencySymbol}>₹</Text>
+                                    <TextInput
+                                        style={styles.amountInput}
+                                        value={amount}
+                                        onChangeText={setAmount}
+                                        placeholder="0.00"
+                                        placeholderTextColor="#999"
+                                        keyboardType="decimal-pad"
+                                        returnKeyType="done"
+                                    />
+                                </View>
+                            </View>
+
+                            {/* Business/Store Name Input */}
+                            <View style={styles.inputGroup}>
+                                <Text style={styles.label}>Business/Store Name *</Text>
+                                <TextInput
+                                    style={styles.textInput}
+                                    value={businessName}
+                                    onChangeText={setBusinessName}
+                                    placeholder="e.g., McDonald's, Shell Gas Station"
                                     placeholderTextColor="#999"
-                                    keyboardType="decimal-pad"
+                                    returnKeyType="next"
+                                />
+
+                                {/* Business Suggestions */}
+                                {category && businessSuggestions[category] && (
+                                    <View style={styles.suggestionsContainer}>
+                                        <Text style={styles.suggestionsTitle}>Quick Select:</Text>
+                                        <ScrollView
+                                            horizontal
+                                            showsHorizontalScrollIndicator={false}
+                                            style={styles.suggestionsScroll}
+                                        >
+                                            {businessSuggestions[category].map((business, index) => (
+                                                <TouchableOpacity
+                                                    key={index}
+                                                    style={styles.suggestionChip}
+                                                    onPress={() => selectBusinessSuggestion(business)}
+                                                >
+                                                    <Text style={styles.suggestionText}>{business}</Text>
+                                                </TouchableOpacity>
+                                            ))}
+                                        </ScrollView>
+                                    </View>
+                                )}
+                            </View>
+
+                            {/* Description Input */}
+                            <View style={styles.inputGroup}>
+                                <Text style={styles.label}>Description *</Text>
+                                <TextInput
+                                    style={[styles.textInput, styles.descriptionInput]}
+                                    value={description}
+                                    onChangeText={setDescription}
+                                    placeholder="What was this expense for?"
+                                    placeholderTextColor="#999"
+                                    multiline
+                                    numberOfLines={3}
+                                    textAlignVertical="top"
                                     returnKeyType="done"
                                 />
                             </View>
-                        </View>
 
-                        {/* Category Picker */}
-                        <View style={styles.inputGroup}>
-                            <Text style={styles.label}>Category *</Text>
-                            <View style={styles.pickerContainer}>
-                                <Picker
-                                    selectedValue={category}
-                                    onValueChange={setCategory}
-                                    style={styles.picker}
-                                    itemStyle={styles.pickerItem}
-                                >
-                                    <Picker.Item label="Select a category" value="" />
-                                    {categories.map((cat, index) => (
-                                        <Picker.Item key={index} label={cat} value={cat} />
-                                    ))}
-                                </Picker>
+                            <View style={{ flexDirection: 'row', gap: 50, alignItems: 'center' }}>
+                                {/* Save Button */}
+                                <TouchableOpacity style={styles.saveButton} onPress={saveExpense}>
+                                    <Text style={styles.saveButtonText}>Save Expense</Text>
+                                </TouchableOpacity>
+
+                                {/* Clear Button */}
+                                <TouchableOpacity style={[styles.clearButton, { marginTop: 20 }]} onPress={clearForm}>
+                                    <Text style={styles.clearButtonText}>Clear Form</Text>
+                                </TouchableOpacity>
                             </View>
                         </View>
-
-                        {/* Business/Store Name Input */}
-                        <View style={styles.inputGroup}>
-                            <Text style={styles.label}>Business/Store Name *</Text>
-                            <TextInput
-                                style={styles.textInput}
-                                value={businessName}
-                                onChangeText={setBusinessName}
-                                placeholder="e.g., McDonald's, Shell Gas Station"
-                                placeholderTextColor="#999"
-                                returnKeyType="next"
-                            />
-
-                            {/* Business Suggestions */}
-                            {category && businessSuggestions[category] && (
-                                <View style={styles.suggestionsContainer}>
-                                    <Text style={styles.suggestionsTitle}>Quick Select:</Text>
-                                    <ScrollView
-                                        horizontal
-                                        showsHorizontalScrollIndicator={false}
-                                        style={styles.suggestionsScroll}
-                                    >
-                                        {businessSuggestions[category].map((business, index) => (
-                                            <TouchableOpacity
-                                                key={index}
-                                                style={styles.suggestionChip}
-                                                onPress={() => selectBusinessSuggestion(business)}
-                                            >
-                                                <Text style={styles.suggestionText}>{business}</Text>
-                                            </TouchableOpacity>
-                                        ))}
-                                    </ScrollView>
-                                </View>
-                            )}
-                        </View>
-
-                        {/* Description Input */}
-                        <View style={styles.inputGroup}>
-                            <Text style={styles.label}>Description *</Text>
-                            <TextInput
-                                style={[styles.textInput, styles.descriptionInput]}
-                                value={description}
-                                onChangeText={setDescription}
-                                placeholder="What was this expense for?"
-                                placeholderTextColor="#999"
-                                multiline
-                                numberOfLines={3}
-                                textAlignVertical="top"
-                                returnKeyType="done"
-                            />
-                        </View>
-
-                        {/* Save Button */}
-                        <TouchableOpacity style={styles.saveButton} onPress={saveExpense}>
-                            <Text style={styles.saveButtonText}>Save Expense</Text>
-                        </TouchableOpacity>
-
-                        {/* Clear Button */}
-                        <TouchableOpacity style={styles.clearButton} onPress={clearForm}>
-                            <Text style={styles.clearButtonText}>Clear Form</Text>
-                        </TouchableOpacity>
-                    </View>
+                    )}
                 </ScrollView>
             </KeyboardAvoidingView>
             <View style={styles.bottomBar}>
@@ -317,9 +495,26 @@ const styles = StyleSheet.create({
         flex: 1,
     },
     header: {
-        backgroundColor: '#4CAF50',
+        backgroundColor: '#8B5CF6',
         padding: 20,
         paddingTop: 40,
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    headerContent: {
+        position: 'relative',
+    },
+    backButton: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        zIndex: 1,
+        paddingVertical: 5,
+    },
+    backButtonText: {
+        color: 'white',
+        marginRight: 30,
+        fontWeight: '500',
     },
     headerTitle: {
         fontSize: 24,
@@ -331,11 +526,88 @@ const styles = StyleSheet.create({
         fontSize: 14,
         color: 'rgba(255, 255, 255, 0.9)',
     },
+    categoryContainer: {
+        padding: 20,
+        paddingBottom: 100,
+    },
+    categoryTitle: {
+        fontSize: 22,
+        fontWeight: 'bold',
+        color: '#333',
+        textAlign: 'center',
+        marginBottom: 8,
+    },
+    categorySubtitle: {
+        fontSize: 16,
+        color: '#666',
+        textAlign: 'center',
+        marginBottom: 30,
+    },
+    categoriesGrid: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        justifyContent: 'space-between',
+    },
+    categoryCard: {
+        width: '48%',
+        backgroundColor: 'white',
+        borderRadius: 12,
+        padding: 20,
+        alignItems: 'center',
+        marginBottom: 15,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+        elevation: 3,
+        borderWidth: 1,
+        borderColor: '#f0f0f0',
+    },
+    categoryIcon: {
+        marginBottom: 10,
+    },
+    categoryName: {
+        fontSize: 14,
+        fontWeight: '600',
+        color: '#333',
+        textAlign: 'center',
+    },
     formContainer: {
         padding: 20,
+        paddingBottom: 120,
+    },
+    selectedCategoryContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: 'white',
+        borderRadius: 12,
+        padding: 15,
+        marginBottom: 20,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.1,
+        shadowRadius: 2,
+        elevation: 2,
+        borderLeftWidth: 4,
+    },
+    selectedCategoryIconStyle: {
+        marginRight: 15,
+    },
+    selectedCategoryInfo: {
+        flex: 1,
+    },
+    selectedCategoryLabel: {
+        fontSize: 12,
+        color: '#666',
+        marginBottom: 2,
+    },
+    selectedCategoryName: {
+        fontSize: 16,
+        fontWeight: '600',
+        color: '#333',
     },
     inputGroup: {
-        marginBottom: 20,
+        marginBottom: 5,
     },
     label: {
         fontSize: 16,
@@ -388,23 +660,6 @@ const styles = StyleSheet.create({
         height: 80,
         textAlignVertical: 'top',
     },
-    pickerContainer: {
-        backgroundColor: 'white',
-        borderWidth: 1,
-        borderColor: '#ddd',
-        borderRadius: 8,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.1,
-        shadowRadius: 2,
-        elevation: 2,
-    },
-    picker: {
-        height: 55,
-    },
-    pickerItem: {
-        height: 50,
-    },
     suggestionsContainer: {
         marginTop: 10,
     },
@@ -431,7 +686,7 @@ const styles = StyleSheet.create({
         fontWeight: '500',
     },
     saveButton: {
-        backgroundColor: '#4CAF50',
+        backgroundColor: '#8B5CF6',
         borderRadius: 8,
         padding: 15,
         alignItems: 'center',
@@ -456,6 +711,12 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         marginTop: 10,
     },
+    clearButton2: {
+        backgroundColor: 'transparent',
+        borderColor: '#999',
+        borderRadius: 8,
+        alignItems: 'center',
+    },
     clearButtonText: {
         color: '#999',
         fontSize: 16,
@@ -470,6 +731,26 @@ const styles = StyleSheet.create({
         padding: 10,
         borderTopWidth: 1,
         borderColor: '#ddd',
+    },
+    searchContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        borderRadius: 10,
+        paddingHorizontal: 10,
+        marginBottom: 10,
+        marginVertical: 0,
+        backgroundColor: 'white',
+    },
+    searchIcon: {
+        marginTop: 2,
+        marginRight: 8,
+    },
+    searchInput: {
+        flex: 1,
+        fontSize: 16,
+        paddingVertical: 10,
+        color: '#000',
+        backgroundColor: 'white',
     },
 });
 

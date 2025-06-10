@@ -9,7 +9,7 @@ const BUTTONS = [
     ['0', '.', '=', '+'],
 ];
 
-export default function Calculator({color}) {
+export default function Calculator({ color }) {
     const [modalVisible, setModalVisible] = useState(false);
     const [input, setInput] = useState('');
     const [result, setResult] = useState('');
@@ -30,6 +30,14 @@ export default function Calculator({color}) {
     };
 
     const handleClear = () => {
+        if (input.length > 0) {
+            setInput(input.slice(0, -1));
+        }
+        setResult('');
+    };
+
+
+    const handleAllClear = () => {
         setInput('');
         setResult('');
     };
@@ -51,6 +59,9 @@ export default function Calculator({color}) {
                 onRequestClose={() => setModalVisible(false)}
             >
                 <View style={styles.modalContainer}>
+                    <TouchableOpacity style={styles.closeBtn} onPress={() => setModalVisible(false)}>
+                        <MaterialCommunityIcons name="close" size={32} color="black" />
+                    </TouchableOpacity>
                     <View style={styles.display}>
                         <Text style={styles.inputText}>{input}</Text>
                         <Text style={styles.resultText}>{result}</Text>
@@ -75,11 +86,14 @@ export default function Calculator({color}) {
                         ))}
                         <View style={styles.buttonRow}>
                             <TouchableOpacity style={styles.clearBtn} onPress={handleClear}>
-                                <Text style={styles.calcBtnText}>C</Text>
+                                <MaterialCommunityIcons name="backspace-outline" size={24} style={styles.calcBtnText} />
                             </TouchableOpacity>
-                            <TouchableOpacity style={styles.closeBtn} onPress={() => setModalVisible(false)}>
+                            <TouchableOpacity style={styles.clearBtn} onPress={handleAllClear}>
+                                <Text style={styles.calcBtnText}>AC</Text>
+                            </TouchableOpacity>
+                            {/* <TouchableOpacity style={styles.closeBtn} onPress={() => setModalVisible(false)}>
                                 <MaterialCommunityIcons name="close" size={24} color="#fff" />
-                            </TouchableOpacity>
+                            </TouchableOpacity> */}
                         </View>
                     </View>
                 </View>
@@ -111,12 +125,11 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: '#fff',
         justifyContent: 'flex-end',
-        paddingBottom: 30,
+        paddingBottom: 0,
     },
     display: {
-        minHeight: 120,
+        minHeight: 280,
         backgroundColor: '#F4F6F8',
-        justifyContent: 'center',
         alignItems: 'flex-end',
         padding: 24,
         borderBottomWidth: 1,
@@ -171,11 +184,15 @@ const styles = StyleSheet.create({
         marginRight: 8,
     },
     closeBtn: {
-        width: 60,
-        height: 60,
-        backgroundColor: '#BDBDBD',
+        position: 'absolute',
+        top: 15,
+        left: 15,
+        // width: 60,
+        // height: 60,
+        // backgroundColor: '#BDBDBD',
         borderRadius: 12,
         justifyContent: 'center',
         alignItems: 'center',
+        zIndex: 1000,
     },
 });

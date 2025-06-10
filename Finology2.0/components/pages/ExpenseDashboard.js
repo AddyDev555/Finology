@@ -13,8 +13,11 @@ import {
 } from 'react-native';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { BallIndicator } from 'react-native-indicators';
+import { BarChart, LineChart, PieChart, PopulationPyramid, RadarChart } from "react-native-gifted-charts";
+
 
 const ExpenseDashboard = ({ expenses = [], isLoading = false, onRefresh, refreshKey }) => {
+    const [activeTab, setActiveTab] = useState('summary');
     const [viewMode, setViewMode] = useState('daily'); // 'daily' or 'monthly'
     const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());
     const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
@@ -25,6 +28,31 @@ const ExpenseDashboard = ({ expenses = [], isLoading = false, onRefresh, refresh
     const [showMonthPicker, setShowMonthPicker] = useState(false);
     const [datePickerSelectedDate, setDatePickerSelectedDate] = useState(new Date());
 
+    // Group expenses by category
+    const categoryTotal = {};
+
+    expenses.forEach(item => {
+        if (categoryTotal[item.category]) {
+            categoryTotal[item.category] += item.amount;
+        } else {
+            categoryTotal[item.category] = item.amount;
+        }
+    });
+
+    // PieChart & BarChart data
+    const pieData = Object.keys(categoryTotal).map((category, i) => ({
+        value: categoryTotal[category],
+        label: category,
+        color: ['#f94144', '#f3722c', '#43aa8b', '#577590', '#f9c74f'][i % 5],
+    }));
+
+    const barData = Object.keys(categoryTotal).map((category, i) => ({
+        value: categoryTotal[category],
+        label: category,
+        frontColor: ['#f94144', '#f3722c', '#43aa8b', '#577590', '#f9c74f'][i % 5],
+    }));
+
+
     const months = [
         'January', 'February', 'March', 'April', 'May', 'June',
         'July', 'August', 'September', 'October', 'November', 'December'
@@ -32,17 +60,41 @@ const ExpenseDashboard = ({ expenses = [], isLoading = false, onRefresh, refresh
 
     // Category colors and icons for visual distinction
     const categoryConfig = {
-        'Food & Dining': { color: '#FF6B6B', icon: 'food-fork-drink' },
+        'Food & Dining': { color: '#FF6B6B', icon: 'silverware-fork-knife' },
         'Transportation': { color: '#4ECDC4', icon: 'car' },
         'Shopping': { color: '#45B7D1', icon: 'shopping' },
-        'Entertainment': { color: '#4CAF50', icon: 'movie' },
+        'Entertainment': { color: '#4CAF50', icon: 'gamepad-variant' },
         'Bills & Utilities': { color: '#FF9800', icon: 'flash' },
-        'Healthcare': { color: '#4B0082', icon: 'hospital-building' },
+        'Healthcare': { color: '#4B0082', icon: 'hospital-box' },
         'Travel': { color: '#98D8C8', icon: 'airplane' },
-        'Personal Care': { color: '#F7DC6F', icon: 'face-woman-shimmer' },
+        'Personal Care': { color: '#F7DC6F', icon: 'face-woman' },
         'Education': { color: '#BB8FCE', icon: 'school' },
-        'Other': { color: '#85C1E9', icon: 'package-variant' },
+        'Housing & Rent': { color: '#F4A460', icon: 'home-city' },
+        'Clothing & Fashion': { color: '#FF69B4', icon: 'tshirt-crew' },
+        'Fuel & Gas': { color: '#A52A2A', icon: 'gas-station' },
+        'Coffee & Beverages': { color: '#D2691E', icon: 'coffee' },
+        'Movies & Cinema': { color: '#9C27B0', icon: 'movie-open' },
+        'Music & Audio': { color: '#3F51B5', icon: 'music' },
+        'Fitness & Gym': { color: '#FF1493', icon: 'dumbbell' },
+        'Pharmacy & Medicine': { color: '#008080', icon: 'medical-bag' },
+        'Mobile & Phone': { color: '#607D8B', icon: 'cellphone' },
+        'Internet & WiFi': { color: '#03A9F4', icon: 'wifi' },
+        'ATM & Banking': { color: '#795548', icon: 'credit-card' },
+        'Gifts & Donations': { color: '#E91E63', icon: 'gift' },
+        'Baby & Kids': { color: '#FFB6C1', icon: 'baby-face-outline' },
+        'Pets & Animals': { color: '#8BC34A', icon: 'dog' },
+        'Home Maintenance': { color: '#A9A9A9', icon: 'tools' },
+        'Electronics & Tech': { color: '#00008B', icon: 'laptop' },
+        'Photography': { color: '#FF4500', icon: 'camera' },
+        'Books & Reading': { color: '#6A5ACD', icon: 'book-open-page-variant' },
+        'Art & Craft': { color: '#FF6347', icon: 'palette' },
+        'Garden & Plants': { color: '#228B22', icon: 'flower' },
+        'Laundry & Cleaning': { color: '#ADD8E6', icon: 'washing-machine' },
+        'Insurance': { color: '#808080', icon: 'shield-check' },
+        'Alcohol & Drinks': { color: '#C71585', icon: 'glass-cocktail' },
+        'Other': { color: '#85C1E9', icon: 'dots-horizontal' }
     };
+
 
     // Generate months for the picker (current year and previous year)
     const generateMonthOptions = () => {
@@ -281,7 +333,7 @@ const ExpenseDashboard = ({ expenses = [], isLoading = false, onRefresh, refresh
     if (isLoading) {
         return (
             <View style={styles.contentLoaderContainer}>
-                <BallIndicator color="#2196F3" size={60} />
+                <BallIndicator color="#8B5CF6" size={60} />
             </View>
         );
     }
@@ -330,7 +382,6 @@ const ExpenseDashboard = ({ expenses = [], isLoading = false, onRefresh, refresh
                 </View>
             </View>
 
-
             {/* Category Summary Cards */}
             <Text style={styles.headerText}>Categories</Text>
             <ScrollView
@@ -365,51 +416,194 @@ const ExpenseDashboard = ({ expenses = [], isLoading = false, onRefresh, refresh
                 })}
             </ScrollView>
 
+            {/* Analysis and Summary Switch */}
+            <View style={dashboardStyles.tabRootContainer}>
+                <View style={dashboardStyles.tabSwitchBar}>
+                    <TouchableOpacity
+                        style={[
+                            dashboardStyles.tabButton,
+                            activeTab === 'summary' && dashboardStyles.tabActiveButton,
+                        ]}
+                        onPress={() => setActiveTab('summary')}
+                    >
+                        <Text
+                            style={[
+                                dashboardStyles.tabText,
+                                activeTab === 'summary' && dashboardStyles.tabActiveText,
+                            ]}
+                        >
+                            All Expenses
+                        </Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity
+                        style={[
+                            dashboardStyles.tabButton,
+                            activeTab === 'analysis' && dashboardStyles.tabActiveButton,
+                        ]}
+                        onPress={() => setActiveTab('analysis')}
+                    >
+                        <Text
+                            style={[
+                                dashboardStyles.tabText,
+                                activeTab === 'analysis' && dashboardStyles.tabActiveText,
+                            ]}
+                        >
+                            Analysis Dashboard
+                        </Text>
+                    </TouchableOpacity>
+                </View>
+            </View>
+
             {/* Expenses List */}
-            <ScrollView
-                style={styles.expensesContainer}
-                showsVerticalScrollIndicator={false}
-                refreshControl={
-                    <RefreshControl
-                        refreshing={refreshing}
-                        onRefresh={handleRefresh}
-                        colors={['#2196F3']}
-                        tintColor="#2196F3"
-                    />
-                }
-            >
-                {sortedKeys.length > 0 ? (
-                    sortedKeys.map(dateKey => (
-                        <DaySection
-                            key={dateKey}
-                            dateKey={dateKey}
-                            dayData={groupedExpenses[dateKey]}
+            {activeTab === 'summary' && (
+                <ScrollView
+                    style={styles.expensesContainer}
+                    showsVerticalScrollIndicator={false}
+                    refreshControl={
+                        <RefreshControl
+                            refreshing={refreshing}
+                            onRefresh={handleRefresh}
+                            colors={['#2196F3']}
+                            tintColor="#2196F3"
                         />
-                    ))
-                ) : (
-                    <View style={styles.emptyContainer}>
-                        <MaterialCommunityIcons
-                            name="receipt"
-                            size={64}
-                            color="#ccc"
-                            style={styles.emptyIcon}
+                    }
+                >
+                    {sortedKeys.length > 0 ? (
+                        sortedKeys.map(dateKey => (
+                            <DaySection
+                                key={dateKey}
+                                dateKey={dateKey}
+                                dayData={groupedExpenses[dateKey]}
+                            />
+                        ))
+                    ) : (
+                        <View style={styles.emptyContainer}>
+                            <MaterialCommunityIcons
+                                name="receipt"
+                                size={64}
+                                color="#ccc"
+                                style={styles.emptyIcon}
+                            />
+                            <Text style={styles.emptyText}>No expenses found</Text>
+                            <Text style={styles.emptySubText}>Pull down to refresh or add your first expense</Text>
+                        </View>
+                    )}
+                </ScrollView>
+            )}
+
+            {activeTab === 'analysis' && (
+                <ScrollView
+                    style={styles.expensesContainer}
+                    showsVerticalScrollIndicator={false}
+                    refreshControl={
+                        <RefreshControl
+                            refreshing={refreshing}
+                            onRefresh={handleRefresh}
+                            colors={['#2196F3']}
+                            tintColor="#2196F3"
                         />
-                        <Text style={styles.emptyText}>No expenses found</Text>
-                        <Text style={styles.emptySubText}>Pull down to refresh or add your first expense</Text>
+                    }
+                >
+                    <View style={dashboardStyles.tabContentWrapper}>
+                        <Text style={dashboardStyles.chartTitle}>Category Distribution</Text>
+                        <PieChart
+                            data={pieData}
+                            donut
+                            radius={120}
+                            innerRadius={60}
+                            showText
+                            textColor="white"
+                            focusOnPress
+                        />
+
+                        {/* Bar Chart */}
+                        <Text style={dashboardStyles.chartTitle}>Spending per Category</Text>
+                        <BarChart
+                            data={barData}
+                            barWidth={30}
+                            spacing={20}
+                            roundedTop
+                            isAnimated
+                        />
+
+                        {/* Optional Line Chart: Trend (dummy for now) */}
+                        <Text style={dashboardStyles.chartTitle}>Spending Trend (Example)</Text>
+                        <LineChart
+                            data={[0, 200, 600, 900, 400, 1200, 500]}
+                            thickness={3}
+                            color="#2196F3"
+                            hideDataPoints
+                            isAnimated
+                            maxValue={2000}
+                        />
                     </View>
-                )}
-            </ScrollView>
+                </ScrollView>
+
+            )}
             <MonthPickerModal />
         </View>
     );
 };
+
+const dashboardStyles = StyleSheet.create({
+    tabRootContainer: {
+        marginTop: 15,
+        paddingHorizontal: 5,
+    },
+    tabSwitchBar: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        backgroundColor: '#EDE9FE',
+        borderRadius: 12,
+        padding: 0,
+        marginBottom: 5,
+    },
+    tabButton: {
+        flex: 1,
+        paddingVertical: 12,
+        alignItems: 'center',
+        borderRadius: 10,
+    },
+    tabActiveButton: {
+        backgroundColor: '#8B5CF6',
+    },
+    tabText: {
+        fontSize: 12,
+        fontWeight: '500',
+        color: '#4B0082',
+    },
+    tabActiveText: {
+        color: '#ffffff',
+    },
+    tabContentWrapper: {
+        minHeight: 200,
+        padding: 16,
+        backgroundColor: '#FFFFFF',
+        borderRadius: 12,
+        elevation: 3,
+    },
+    summarySection: {
+        // Additional summary styling if needed
+    },
+    analysisSection: {
+        // Additional analysis styling if needed
+    },
+    tabSectionTitle: {
+        fontSize: 18,
+        fontWeight: '600',
+        color: '#4B0082',
+        marginBottom: 10,
+    },
+});
+
 
 const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: '#f5f5f5',
     },
-    headerText:{
+    headerText: {
         fontSize: 20,
         paddingHorizontal: 10,
         fontWeight: 'bold',
@@ -500,11 +694,8 @@ const styles = StyleSheet.create({
     },
     // New styles for top summary cards
     topSummaryContainer: {
-        // backgroundColor: 'white',
         paddingVertical: 10,
         paddingHorizontal: 7,
-        borderBottomWidth: 1,
-        borderBottomColor: '#e0e0e0',
     },
     summaryRow: {
         flexDirection: 'row',

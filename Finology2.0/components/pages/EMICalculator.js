@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import BottomBar from '../ui/BottomBar';
+import Calculator from '../ui/Calculator';
 
 const { width } = Dimensions.get('window');
 
@@ -39,9 +40,9 @@ const EMICalculatorPage = () => {
     const calculateEMI = useCallback((principal, rate, months) => {
         const monthlyRate = rate / (12 * 100);
         if (monthlyRate === 0) return principal / months;
-        
-        const emi = principal * monthlyRate * Math.pow(1 + monthlyRate, months) / 
-                   (Math.pow(1 + monthlyRate, months) - 1);
+
+        const emi = principal * monthlyRate * Math.pow(1 + monthlyRate, months) /
+            (Math.pow(1 + monthlyRate, months) - 1);
         return emi;
     }, []);
 
@@ -49,9 +50,9 @@ const EMICalculatorPage = () => {
     const calculateLoanAmount = useCallback((emi, rate, months) => {
         const monthlyRate = rate / (12 * 100);
         if (monthlyRate === 0) return emi * months;
-        
-        const principal = emi * (Math.pow(1 + monthlyRate, months) - 1) / 
-                         (monthlyRate * Math.pow(1 + monthlyRate, months));
+
+        const principal = emi * (Math.pow(1 + monthlyRate, months) - 1) /
+            (monthlyRate * Math.pow(1 + monthlyRate, months));
         return principal;
     }, []);
 
@@ -59,9 +60,9 @@ const EMICalculatorPage = () => {
     const calculateTenure = useCallback((principal, emi, rate) => {
         const monthlyRate = rate / (12 * 100);
         if (monthlyRate === 0) return principal / emi;
-        
-        const months = Math.log(1 + (principal * monthlyRate) / emi) / 
-                      Math.log(1 + monthlyRate) * -1;
+
+        const months = Math.log(1 + (principal * monthlyRate) / emi) /
+            Math.log(1 + monthlyRate) * -1;
         return Math.abs(months);
     }, []);
 
@@ -70,18 +71,18 @@ const EMICalculatorPage = () => {
         let low = 0;
         let high = 50;
         let tolerance = 0.01;
-        
+
         while (high - low > tolerance) {
             const mid = (low + high) / 2;
             const calculatedEMI = calculateEMI(principal, mid, months);
-            
+
             if (calculatedEMI > emi) {
                 high = mid;
             } else {
                 low = mid;
             }
         }
-        
+
         return (low + high) / 2;
     }, [calculateEMI]);
 
@@ -100,7 +101,7 @@ const EMICalculatorPage = () => {
                     const calculatedEMI = calculateEMI(principal, rate, months);
                     const totalPayment = calculatedEMI * months;
                     const totalInterest = totalPayment - principal;
-                    
+
                     result = {
                         emi: calculatedEMI,
                         totalPayment,
@@ -116,7 +117,7 @@ const EMICalculatorPage = () => {
                     const calculatedLoan = calculateLoanAmount(emi, rate, months);
                     const totalPaymentLoan = emi * months;
                     const totalInterestLoan = totalPaymentLoan - calculatedLoan;
-                    
+
                     result = {
                         loanAmount: calculatedLoan,
                         totalPayment: totalPaymentLoan,
@@ -132,7 +133,7 @@ const EMICalculatorPage = () => {
                     const calculatedMonths = calculateTenure(principal, emi, rate);
                     const totalPaymentTenure = emi * calculatedMonths;
                     const totalInterestTenure = totalPaymentTenure - principal;
-                    
+
                     result = {
                         tenure: calculatedMonths,
                         tenureYears: calculatedMonths / 12,
@@ -150,7 +151,7 @@ const EMICalculatorPage = () => {
                     const calculatedRate = calculateInterestRate(principal, emi, months);
                     const totalPaymentRate = emi * months;
                     const totalInterestRate = totalPaymentRate - principal;
-                    
+
                     result = {
                         interestRate: calculatedRate,
                         totalPayment: totalPaymentRate,
@@ -180,9 +181,9 @@ const EMICalculatorPage = () => {
 
     const formatNumber = (num, decimals = 2) => {
         if (!num || isNaN(num)) return '0';
-        return num.toLocaleString('en-IN', { 
+        return num.toLocaleString('en-IN', {
             minimumFractionDigits: decimals,
-            maximumFractionDigits: decimals 
+            maximumFractionDigits: decimals
         });
     };
 
@@ -212,11 +213,11 @@ const EMICalculatorPage = () => {
 
     const ProgressBar = ({ percentage, color }) => (
         <View style={styles.progressBarContainer}>
-            <View 
+            <View
                 style={[
-                    styles.progressBar, 
+                    styles.progressBar,
                     { width: `${percentage}%`, backgroundColor: color }
-                ]} 
+                ]}
             />
         </View>
     );
@@ -225,8 +226,13 @@ const EMICalculatorPage = () => {
         <SafeAreaView style={styles.container}>
             {/* Header */}
             <View style={styles.header}>
-                <Text style={styles.headerTitle}>EMI Calculator</Text>
-                <Text style={styles.headerSubtitle}>Calculate your loan details</Text>
+                <View>
+                    <Text style={styles.headerTitle}>EMI Calculator</Text>
+                    <Text style={styles.headerSubtitle}>Calculate your loan details</Text>
+                </View>
+                <View style={{ marginLeft: 'auto' }}>
+                    <Calculator color="#8B5CF6" />
+                </View>
             </View>
 
             <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
@@ -248,10 +254,10 @@ const EMICalculatorPage = () => {
                                         setIsResultVisible(false);
                                     }}
                                 >
-                                    <MaterialCommunityIcons 
-                                        name={mode.icon} 
-                                        size={24} 
-                                        color={calculatorMode === mode.key ? 'white' : mode.color} 
+                                    <MaterialCommunityIcons
+                                        name={mode.icon}
+                                        size={24}
+                                        color={calculatorMode === mode.key ? 'white' : mode.color}
                                     />
                                     <Text style={[
                                         styles.modeText,
@@ -375,14 +381,14 @@ const EMICalculatorPage = () => {
 
                     {/* Action Buttons */}
                     <View style={styles.buttonContainer}>
-                        <TouchableOpacity 
+                        <TouchableOpacity
                             style={[styles.actionButton, styles.calculateButton]}
                             onPress={handleCalculate}
                         >
                             <MaterialCommunityIcons name="calculator" size={20} color="white" />
                             <Text style={styles.buttonText}>Calculate</Text>
                         </TouchableOpacity>
-                        <TouchableOpacity 
+                        <TouchableOpacity
                             style={[styles.actionButton, styles.resetButton]}
                             onPress={resetCalculator}
                         >
@@ -449,7 +455,7 @@ const EMICalculatorPage = () => {
                         {/* Payment Breakdown */}
                         <View style={styles.breakdownContainer}>
                             <Text style={styles.breakdownTitle}>Payment Breakdown</Text>
-                            
+
                             <View style={styles.breakdownItem}>
                                 <View style={styles.breakdownHeader}>
                                     <Text style={styles.breakdownLabel}>Principal Amount</Text>
@@ -457,9 +463,9 @@ const EMICalculatorPage = () => {
                                         {formatNumber(calculations.principalPercentage)}%
                                     </Text>
                                 </View>
-                                <ProgressBar 
-                                    percentage={calculations.principalPercentage} 
-                                    color="#4CAF50" 
+                                <ProgressBar
+                                    percentage={calculations.principalPercentage}
+                                    color="#4CAF50"
                                 />
                             </View>
 
@@ -470,9 +476,9 @@ const EMICalculatorPage = () => {
                                         {formatNumber(calculations.interestPercentage)}%
                                     </Text>
                                 </View>
-                                <ProgressBar 
-                                    percentage={calculations.interestPercentage} 
-                                    color="#FF5722" 
+                                <ProgressBar
+                                    percentage={calculations.interestPercentage}
+                                    color="#FF5722"
                                 />
                             </View>
                         </View>
@@ -505,9 +511,11 @@ const styles = StyleSheet.create({
         backgroundColor: '#f5f5f5',
     },
     header: {
-        backgroundColor: '#FF9800',
+        backgroundColor: '#8B5CF6',
         padding: 20,
         paddingTop: 40,
+        flexDirection: 'row',
+        alignItems: 'center',
     },
     headerTitle: {
         fontSize: 24,
@@ -555,7 +563,7 @@ const styles = StyleSheet.create({
         borderColor: '#e0e0e0',
     },
     selectedMode: {
-        backgroundColor: '#FF9800',
+        backgroundColor: '#8B5CF6',
     },
     modeText: {
         marginTop: 8,
@@ -632,7 +640,7 @@ const styles = StyleSheet.create({
         backgroundColor: '#f9f9f9',
     },
     selectedTenureType: {
-        backgroundColor: '#FF9800',
+        backgroundColor: '#8B5CF6',
     },
     tenureTypeText: {
         fontSize: 14,
@@ -656,7 +664,7 @@ const styles = StyleSheet.create({
         marginHorizontal: 5,
     },
     calculateButton: {
-        backgroundColor: '#FF9800',
+        backgroundColor: '#8B5CF6',
     },
     resetButton: {
         backgroundColor: '#f0f0f0',
