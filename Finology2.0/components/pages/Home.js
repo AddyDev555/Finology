@@ -7,6 +7,7 @@ import TopBar from '../ui/TopBar';
 import BottomBar from '../ui/BottomBar';
 import ExpenseDashboard from './ExpenseDashboard';
 import { router } from 'expo-router';
+import { scale, verticalScale } from '@/components/utils/responsive';
 
 const formatDateForSearch = (dateString) => {
     try {
@@ -270,11 +271,11 @@ const styles = StyleSheet.create({
         flex: 1,
     },
     ExpenseDashboardCon: {
-        marginTop: 100,
+        marginTop: verticalScale(100),
     },
     scrollContainer: {
-        paddingHorizontal: 20,
-        paddingBottom: 80,
+        paddingHorizontal: scale(20),
+        paddingBottom: verticalScale(80),
     },
     bottomBar: {
         position: 'absolute',
@@ -282,10 +283,9 @@ const styles = StyleSheet.create({
         left: 0,
         right: 0,
         backgroundColor: '#fff',
-        padding: 10,
+        padding: scale(10),
         borderTopWidth: 1,
         borderColor: '#ddd',
     },
 });
-
 export default Home;

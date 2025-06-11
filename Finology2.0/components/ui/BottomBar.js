@@ -9,7 +9,7 @@ import {
 } from 'react-native';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { router, useSegments } from 'expo-router';
-
+import { scale, moderateScale, verticalScale } from '../utils/responsive'; // Adjust the import path as necessary
 const { width } = Dimensions.get('window');
 
 const BottomBar = ({ activeTab, onTabPress }) => {
@@ -141,10 +141,10 @@ const BottomBar = ({ activeTab, onTabPress }) => {
 
 const styles = StyleSheet.create({
     container: {
-        height: 75,
+        height: verticalScale(75),
         flexDirection: 'row',
         paddingVertical: 0,
-        paddingHorizontal: 8,
+        paddingHorizontal: scale(8),
         alignItems: 'center',
         justifyContent: 'space-around',
         backgroundColor: '#ffffff',
@@ -153,19 +153,19 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
         paddingVertical: 0,
-        paddingHorizontal: 12,
-        minWidth: 40,
-        marginBottom: 35,
+        paddingHorizontal: scale(12),
+        minWidth: scale(40),
+        marginBottom: verticalScale(35),
     },
     tabLabel: {
-        fontSize: 12,
+        fontSize: moderateScale(12),
         color: 'black',
         fontWeight: '500',
-        marginTop: 2,
+        marginTop: verticalScale(2),
         textAlign: 'center',
     },
     activeTabLabel: {
-        fontSize: 12,
+        fontSize: moderateScale(12),
         color: 'black',
         fontWeight: '500',
     },
@@ -173,12 +173,12 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
         position: 'relative',
-        bottom: 30,
+        bottom: verticalScale(30),
     },
     addButton: {
-        width: 56,
-        height: 56,
-        borderRadius: 30,
+        width: scale(56),
+        height: scale(56),
+        borderRadius: moderateScale(30),
         backgroundColor: '#7B68EE',
         alignItems: 'center',
         justifyContent: 'center',
@@ -186,10 +186,10 @@ const styles = StyleSheet.create({
         shadowColor: '#8B7BC7',
         shadowOffset: {
             width: 0,
-            height: 4,
+            height: verticalScale(4),
         },
         shadowOpacity: 0.3,
-        shadowRadius: 8,
+        shadowRadius: moderateScale(8),
     },
 });
 

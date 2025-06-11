@@ -17,6 +17,7 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import Calculator from '../ui/Calculator';
 import { BallIndicator } from 'react-native-indicators';
 import BottomBar from '../ui/BottomBar';
+import { scale, verticalScale, moderateScale } from '@/components/utils/responsive';
 
 const BacklogPage = () => {
     const [backlogs, setBacklogs] = useState([]);
@@ -529,10 +530,27 @@ const BacklogPage = () => {
 
 const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: '#f5f5f5' },
-    header: { backgroundColor: '#8B5CF6', padding: 20, paddingTop: 40, flexDirection: 'row', alignItems: 'center' },
-    headerTitle: { fontSize: 24, fontWeight: 'bold', color: 'white', marginBottom: 10 },
-    totalPending: { fontSize: 16, color: 'rgba(255, 255, 255, 0.9)', fontWeight: '600' },
+
+    header: {
+        backgroundColor: '#8B5CF6',
+        padding: scale(20),
+        paddingTop: verticalScale(40),
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    headerTitle: {
+        fontSize: moderateScale(24),
+        fontWeight: 'bold',
+        color: 'white',
+        marginBottom: verticalScale(10),
+    },
+    totalPending: {
+        fontSize: moderateScale(16),
+        color: 'rgba(255, 255, 255, 0.9)',
+        fontWeight: '600',
+    },
     content: { flex: 1 },
+
     loadingScreen: {
         flex: 1,
         justifyContent: 'center',
@@ -540,8 +558,8 @@ const styles = StyleSheet.create({
         backgroundColor: '#f5f5f5',
     },
     loadingScreenText: {
-        marginTop: 15,
-        fontSize: 16,
+        marginTop: verticalScale(15),
+        fontSize: moderateScale(16),
         color: '#666',
         fontWeight: '500',
     },
@@ -549,11 +567,11 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
-        paddingVertical: 15,
+        paddingVertical: verticalScale(15),
     },
     loadingText: {
-        marginLeft: 10,
-        fontSize: 14,
+        marginLeft: scale(10),
+        fontSize: moderateScale(14),
         color: '#666',
         fontWeight: '500',
     },
@@ -563,50 +581,232 @@ const styles = StyleSheet.create({
     disabledText: {
         opacity: 0.5,
     },
-    formContainer: { backgroundColor: 'white', margin: 15, borderRadius: 10, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4, elevation: 3, overflow: 'hidden' },
-    formHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 20, backgroundColor: '#f9f9f9', borderBottomWidth: 1, borderBottomColor: '#e0e0e0' },
-    formContent: { padding: 20 },
-    sectionTitle: { fontSize: 18, fontWeight: 'bold', marginBottom: 15, color: '#333' },
-    textInput: { borderWidth: 1, borderColor: '#e0e0e0', borderRadius: 8, padding: 12, fontSize: 16, backgroundColor: '#f9f9f9', marginBottom: 15 },
-    textArea: { height: 80, textAlignVertical: 'top' },
-    categorySelector: { flexDirection: 'row', paddingVertical: 5, marginBottom: 15 },
-    categoryOption: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 15, paddingVertical: 10, marginRight: 10, borderRadius: 20, borderWidth: 2, backgroundColor: 'white', borderColor: '#e0e0e0' },
-    selectedCategory: { backgroundColor: '#8B5CF6' },
-    categoryOptionText: { marginLeft: 8, fontSize: 14, fontWeight: '600', color: '#666' },
-    selectedCategoryText: { color: 'white' },
-    dateButton: { flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderColor: '#e0e0e0', borderRadius: 8, padding: 12, backgroundColor: '#f9f9f9', marginBottom: 15 },
-    dateButtonText: { marginLeft: 10, fontSize: 16, color: '#333' },
-    submitButton: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', backgroundColor: '#8B5CF6', paddingVertical: 15, paddingHorizontal: 20, borderRadius: 8, marginTop: 10 },
-    submitButtonText: { marginLeft: 8, fontSize: 16, fontWeight: '600', color: 'white' },
-    cancelButton: { alignItems: 'center', paddingVertical: 10, marginTop: 10 },
-    cancelButtonText: { fontSize: 16, color: '#666', textDecorationLine: 'underline' },
-    backlogsContainer: { margin: 15, marginTop: 0 },
-    backlogCard: { backgroundColor: 'white', borderRadius: 10, padding: 15, marginBottom: 15, borderLeftWidth: 4, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4, elevation: 3 },
-    cardHeader: { marginBottom: 10 },
-    personInfo: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 5 },
-    nameContainer: { flexDirection: 'row', alignItems: 'center' },
-    personName: { fontSize: 18, fontWeight: 'bold', color: '#333', marginLeft: 8 },
-    amount: { fontSize: 20, fontWeight: 'bold' },
-    statusText: { fontSize: 14, fontWeight: '600' },
-    description: { fontSize: 14, color: '#666', marginBottom: 10, lineHeight: 20 },
-    dateInfo: { fontSize: 14, color: '#666', marginBottom: 10 },
-    categoryBadge: { alignSelf: 'flex-start', paddingHorizontal: 10, paddingVertical: 5, borderRadius: 15, marginBottom: 15 },
-    categoryText: { fontSize: 12, color: 'white', fontWeight: '600' },
-    cardActions: { flexDirection: 'row', justifyContent: 'space-between' },
-    actionButton: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 15, paddingVertical: 8, borderRadius: 6, flex: 1, marginHorizontal: 2, justifyContent: 'center' },
+
+    formContainer: {
+        backgroundColor: 'white',
+        margin: scale(15),
+        borderRadius: scale(10),
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: verticalScale(2) },
+        shadowOpacity: 0.1,
+        shadowRadius: scale(4),
+        elevation: 3,
+        overflow: 'hidden',
+    },
+    formHeader: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        padding: scale(20),
+        backgroundColor: '#f9f9f9',
+        borderBottomWidth: 1,
+        borderBottomColor: '#e0e0e0',
+    },
+    formContent: {
+        padding: scale(20),
+    },
+    sectionTitle: {
+        fontSize: moderateScale(18),
+        fontWeight: 'bold',
+        marginBottom: verticalScale(15),
+        color: '#333',
+    },
+    textInput: {
+        borderWidth: 1,
+        borderColor: '#e0e0e0',
+        borderRadius: scale(8),
+        padding: scale(12),
+        fontSize: moderateScale(16),
+        backgroundColor: '#f9f9f9',
+        marginBottom: verticalScale(15),
+    },
+    textArea: {
+        height: verticalScale(80),
+        textAlignVertical: 'top',
+    },
+
+    categorySelector: {
+        flexDirection: 'row',
+        paddingVertical: verticalScale(5),
+        marginBottom: verticalScale(15),
+    },
+    categoryOption: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingHorizontal: scale(15),
+        paddingVertical: verticalScale(10),
+        marginRight: scale(10),
+        borderRadius: scale(20),
+        borderWidth: 2,
+        backgroundColor: 'white',
+        borderColor: '#e0e0e0',
+    },
+    selectedCategory: {
+        backgroundColor: '#8B5CF6',
+    },
+    categoryOptionText: {
+        marginLeft: scale(8),
+        fontSize: moderateScale(14),
+        fontWeight: '600',
+        color: '#666',
+    },
+    selectedCategoryText: {
+        color: 'white',
+    },
+
+    dateButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        borderWidth: 1,
+        borderColor: '#e0e0e0',
+        borderRadius: scale(8),
+        padding: scale(12),
+        backgroundColor: '#f9f9f9',
+        marginBottom: verticalScale(15),
+    },
+    dateButtonText: {
+        marginLeft: scale(10),
+        fontSize: moderateScale(16),
+        color: '#333',
+    },
+
+    submitButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: '#8B5CF6',
+        paddingVertical: verticalScale(15),
+        paddingHorizontal: scale(20),
+        borderRadius: scale(8),
+        marginTop: verticalScale(10),
+    },
+    submitButtonText: {
+        marginLeft: scale(8),
+        fontSize: moderateScale(16),
+        fontWeight: '600',
+        color: 'white',
+    },
+
+    cancelButton: {
+        alignItems: 'center',
+        paddingVertical: verticalScale(10),
+        marginTop: verticalScale(10),
+    },
+    cancelButtonText: {
+        fontSize: moderateScale(16),
+        color: '#666',
+        textDecorationLine: 'underline',
+    },
+
+    backlogsContainer: {
+        margin: scale(15),
+        marginTop: 0,
+    },
+    backlogCard: {
+        backgroundColor: 'white',
+        borderRadius: scale(10),
+        padding: scale(15),
+        marginBottom: verticalScale(15),
+        borderLeftWidth: 4,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: verticalScale(2) },
+        shadowOpacity: 0.1,
+        shadowRadius: scale(4),
+        elevation: 3,
+    },
+    cardHeader: {
+        marginBottom: verticalScale(10),
+    },
+    personInfo: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: verticalScale(5),
+    },
+    nameContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    personName: {
+        fontSize: moderateScale(18),
+        fontWeight: 'bold',
+        color: '#333',
+        marginLeft: scale(8),
+    },
+    amount: {
+        fontSize: moderateScale(20),
+        fontWeight: 'bold',
+    },
+    statusText: {
+        fontSize: moderateScale(14),
+        fontWeight: '600',
+    },
+    description: {
+        fontSize: moderateScale(14),
+        color: '#666',
+        marginBottom: verticalScale(10),
+        lineHeight: verticalScale(20),
+    },
+    dateInfo: {
+        fontSize: moderateScale(14),
+        color: '#666',
+        marginBottom: verticalScale(10),
+    },
+    categoryBadge: {
+        alignSelf: 'flex-start',
+        paddingHorizontal: scale(10),
+        paddingVertical: verticalScale(5),
+        borderRadius: scale(15),
+        marginBottom: verticalScale(15),
+    },
+    categoryText: {
+        fontSize: moderateScale(12),
+        color: 'white',
+        fontWeight: '600',
+    },
+
+    cardActions: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+    },
+    actionButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingHorizontal: scale(15),
+        paddingVertical: verticalScale(8),
+        borderRadius: scale(6),
+        flex: 1,
+        marginHorizontal: scale(2),
+        justifyContent: 'center',
+    },
     paidButton: { backgroundColor: '#4CAF50' },
     editButton: { backgroundColor: '#FF9800' },
     deleteButton: { backgroundColor: '#F44336' },
-    actionButtonText: { marginLeft: 5, fontSize: 12, fontWeight: '600', color: 'white' },
-    emptyContainer: { alignItems: 'center', paddingVertical: 50 },
-    emptyText: { fontSize: 18, color: '#999', marginTop: 15, fontWeight: '600' },
+    actionButtonText: {
+        marginLeft: scale(5),
+        fontSize: moderateScale(12),
+        fontWeight: '600',
+        color: 'white',
+    },
+
+    emptyContainer: {
+        alignItems: 'center',
+        paddingVertical: verticalScale(50),
+    },
+    emptyText: {
+        fontSize: moderateScale(18),
+        color: '#999',
+        marginTop: verticalScale(15),
+        fontWeight: '600',
+    },
+
     bottomBar: {
         position: 'absolute',
         bottom: 0,
         left: 0,
         right: 0,
         backgroundColor: '#fff',
-        padding: 10,
+        padding: scale(10),
         borderTopWidth: 1,
         borderColor: '#ddd',
     },

@@ -3,6 +3,7 @@ import React from 'react';
 import { Feather } from '@expo/vector-icons';
 import Avatar from './Avatar';
 import { router } from 'expo-router';
+import { scale, moderateScale, verticalScale } from '../utils/responsive';
 
 export default function TopBar({ searchQuery, onSearchChange, onClearSearch }) {
     return (
@@ -36,53 +37,53 @@ export default function TopBar({ searchQuery, onSearchChange, onClearSearch }) {
 const styles = StyleSheet.create({
     inputContainer: {
         width: '72%',
-        paddingHorizontal: 6,
-        marginLeft: 15,
+        paddingHorizontal: scale(6),
+        marginLeft: scale(15),
     },
     container: {
         width: '100%',
         position: 'absolute',
-        top: 30,
+        top: verticalScale(30),
         flexDirection: 'row',
         alignItems: 'center',
     },
     input: {
         width: '100%',
-        height: 40,
+        height: verticalScale(40),
         borderColor: '#ccc',
         borderWidth: 1,
-        borderRadius: 30,
+        borderRadius: moderateScale(30),
         backgroundColor: '#fff',
-        paddingLeft: 32,
+        paddingLeft: scale(32),
     },
     icon: {
-        fontSize: 17,
+        fontSize: moderateScale(17),
         color: '#999',
         position: 'relative',
-        top: 28,
-        left: 10,
+        top: verticalScale(28),
+        left: scale(10),
         zIndex: 10,
     },
     notificationButton: {
-        padding: 8,
-        borderRadius: 12,
+        padding: scale(8),
+        borderRadius: moderateScale(12),
         backgroundColor: '#FFFFFF',
         borderWidth: 1,
         borderColor: '#E0E0E0',
         shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
+        shadowOffset: { width: 0, height: verticalScale(2) },
         shadowOpacity: 0.1,
-        shadowRadius: 4,
+        shadowRadius: moderateScale(4),
         elevation: 3,
-        marginTop: 12,
-        marginRight: 10,
+        marginTop: verticalScale(12),
+        marginRight: scale(10),
         alignItems: 'center',
         justifyContent: 'center',
     },
     clearIcon: {
         position: 'absolute',
-        right: 20,
-        top: 28,
+        right: scale(20),
+        top: verticalScale(28),
         zIndex: 10,
     }
 });

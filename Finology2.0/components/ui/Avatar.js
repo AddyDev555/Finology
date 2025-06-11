@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react'
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { router } from 'expo-router';
+import { scale, moderateScale, verticalScale } from '../utils/responsive'; // Adjust the import path as necessary
 
 export default function Avatar() {
     const [showDropdown, setShowDropdown] = useState(false);
@@ -48,42 +49,42 @@ export default function Avatar() {
 
 const styles = StyleSheet.create({
     container: {
-        width: 40,
-        height: 40,
-        borderRadius: 20,
+        width: scale(40),
+        height: scale(40),
+        borderRadius: moderateScale(20),
         backgroundColor: '#7B68EE',
         justifyContent: 'center',
         alignItems: 'center',
         zIndex: 999,
     },
     text: {
-        fontSize: 20,
+        fontSize: moderateScale(20),
         color: '#fff',
         fontWeight: 'bold',
     },
     dropdown: {
-        width: 95,
+        width: scale(95),
         position: 'absolute',
-        top: 50,
-        right: 20,
+        top: verticalScale(50),
+        right: scale(20),
         backgroundColor: '#fff',
-        padding: 10,
-        borderRadius: 8,
+        padding: scale(10),
+        borderRadius: moderateScale(8),
         shadowColor: '#000',
         shadowOpacity: 0.2,
-        shadowOffset: { width: 0, height: 2 },
-        shadowRadius: 5,
+        shadowOffset: { width: 0, height: verticalScale(2) },
+        shadowRadius: moderateScale(5),
         elevation: 10,
         zIndex: 999,
     },
-    option:{
+    option: {
         flexDirection: 'row',
         alignItems: 'center',
     },
     dropdownItem: {
-        fontSize: 16,
-        paddingVertical: 4,
-        marginLeft: 4,
+        fontSize: moderateScale(16),
+        paddingVertical: verticalScale(4),
+        marginLeft: scale(4),
         color: '#333',
     },
 });

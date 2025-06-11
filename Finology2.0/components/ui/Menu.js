@@ -2,6 +2,7 @@ import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
 import React from 'react';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useNavigation } from '@react-navigation/native';
+import { scale, verticalScale, moderateScale } from '@/components/utils/responsive';
 
 export default function Menu() {
     const navigation = useNavigation();
@@ -54,35 +55,35 @@ const styles = StyleSheet.create({
         flex: 1,
         borderWidth: 1,
         borderColor: '#E0E0E0',
-        borderRadius: 16,
+        borderRadius: scale(16),
         shadowColor: '#000',
         shadowOpacity: 0.08,
-        shadowOffset: { width: 0, height: 4 },
-        shadowRadius: 12,
+        shadowOffset: { width: 0, height: verticalScale(4) },
+        shadowRadius: scale(12),
         elevation: 4,
-        paddingTop: 20,
-        paddingBottom: 8,
+        paddingTop: verticalScale(20),
+        paddingBottom: verticalScale(8),
     },
     menuContainer: {
         width: '100%',
         flexDirection: 'row',
         flexWrap: 'wrap',
-        columnGap: 15.9,
-        rowGap: 3, 
+        columnGap: scale(16),
+        rowGap: verticalScale(3),
     },
     menuItem: {
         width: '30%',
         alignItems: 'center',
         padding: 0,
-        borderRadius: 8,
+        borderRadius: scale(8),
     },
     menuText: {
         width: '80%',
         textAlign: 'center',
-        fontSize: 12,
+        fontSize: moderateScale(12),
         fontWeight: '500',
         color: '#333',
-        paddingTop: 5,
-        marginBottom: 15,
+        paddingTop: verticalScale(5),
+        marginBottom: verticalScale(15),
     },
 });
