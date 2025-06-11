@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { StyleSheet, View, SafeAreaView, ScrollView } from 'react-native';
+import { StyleSheet, View, SafeAreaView, ScrollView, Alert } from 'react-native';
 import Toast from 'react-native-toast-message';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect } from '@react-navigation/native';
@@ -102,6 +102,116 @@ const Home = () => {
         }
     };
 
+    const handleDeleteExpense = async (expenseId) => {
+        try {
+            setIsLoading(true);
+            
+            const response = await fetch(`https://finology.pythonanywhere.com/manual-entry/${expenseId}`, {
+                method: 'DELETE',
+                headers: { 'Content-Type': 'application/json' },
+            });
+
+            if (!response.ok) throw new Error('Failed to delete expense');
+
+            const data = await response.json();
+            if (data.error) throw new Error(data.error);
+
+            // Remove the deleted expense from local state
+            setExpenses(prevExpenses => 
+                prevExpenses.filter(expense => expense.id !== expenseId)
+            );
+
+            Toast.show({
+                type: 'success',
+                position: 'top',
+                text1: 'Success',
+                text2: data.message || 'Expense deleted successfully',
+                visibilityTime: 2000,
+                autoHide: true,
+            });
+
+        } catch (error) {
+            console.error('Error deleting expense:', error);
+            Toast.show({
+                type: 'error',
+                position: 'top',
+                text1: 'Error',
+                text2: 'Failed to delete expense. Please try again.',
+                visibilityTime: 3000,
+                autoHide: true,
+            });
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const handleEditExpense = (expense) => {
+        // Navigate to edit expense screen with expense data
+        // You can pass the expense data as params
+        router.push({
+            pathname: '/home',
+            params: {
+                expenseId: expense.id,
+                business: expense.business,
+                description: expense.description,
+                category: expense.category,
+                amount: expense.amount.toString(),
+                date: expense.date
+            }
+        });
+    };
+
+    const handleUpdateExpense = async (expenseId, updatedExpenseData) => {
+        try {
+            setIsLoading(true);
+            
+            const response = await fetch(`https://finology.pythonanywhere.com/manual-entry/${expenseId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(updatedExpenseData),
+            });
+
+            if (!response.ok) throw new Error('Failed to update expense');
+
+            const data = await response.json();
+            if (data.error) throw new Error(data.error);
+
+            // Update the expense in local state
+            setExpenses(prevExpenses => 
+                prevExpenses.map(expense => 
+                    expense.id === expenseId 
+                        ? { ...expense, ...updatedExpenseData }
+                        : expense
+                )
+            );
+
+            Toast.show({
+                type: 'success',
+                position: 'top',
+                text1: 'Success',
+                text2: data.message || 'Expense updated successfully',
+                visibilityTime: 2000,
+                autoHide: true,
+            });
+
+            return true; // Return success indicator
+
+        } catch (error) {
+            console.error('Error updating expense:', error);
+            Toast.show({
+                type: 'error',
+                position: 'top',
+                text1: 'Error',
+                text2: 'Failed to update expense. Please try again.',
+                visibilityTime: 3000,
+                autoHide: true,
+            });
+            return false; // Return failure indicator
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
     const handleSearchChange = (text) => setSearchQuery(text);
     const clearSearch = () => setSearchQuery('');
     const refreshExpenseData = () => {
@@ -135,6 +245,8 @@ const Home = () => {
                             expenses={filteredExpenses}
                             isLoading={isLoading}
                             onRefresh={refreshExpenseData}
+                            onEditExpense={handleUpdateExpense}
+                            onDeleteExpense={handleDeleteExpense}
                             searchQuery={searchQuery}
                             totalExpenses={expenses.length}
                             filteredCount={filteredExpenses.length}

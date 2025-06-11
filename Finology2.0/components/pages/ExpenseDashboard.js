@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import {
     View,
@@ -10,13 +11,21 @@ import {
     Dimensions,
     RefreshControl,
     Modal,
+    Alert,
 } from 'react-native';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { BallIndicator } from 'react-native-indicators';
 import { BarChart, LineChart, PieChart } from "react-native-gifted-charts";
+import EditExpense from './EditExpense';
 
-
-const ExpenseDashboard = ({ expenses = [], isLoading = false, onRefresh, refreshKey }) => {
+const ExpenseDashboard = ({
+    expenses = [],
+    isLoading = false,
+    onRefresh,
+    refreshKey,
+    onEditExpense, // This will now be the handleUpdateExpense function from Home
+    onDeleteExpense
+}) => {
     const [activeTab, setActiveTab] = useState('summary');
     const [viewMode, setViewMode] = useState('daily'); // 'daily' or 'monthly'
     const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());
@@ -27,6 +36,10 @@ const ExpenseDashboard = ({ expenses = [], isLoading = false, onRefresh, refresh
     const [refreshing, setRefreshing] = useState(false);
     const [showMonthPicker, setShowMonthPicker] = useState(false);
     const [datePickerSelectedDate, setDatePickerSelectedDate] = useState(new Date());
+
+    // State variables for edit modal
+    const [showEditModal, setShowEditModal] = useState(false);
+    const [editingExpense, setEditingExpense] = useState(null);
 
     // Group expenses by category
     const categoryTotal = {};
@@ -206,6 +219,47 @@ const ExpenseDashboard = ({ expenses = [], isLoading = false, onRefresh, refresh
         }
     };
 
+    // UPDATED handleEditExpense FUNCTION - Just opens the modal
+    const handleEditExpense = (expense) => {
+        setEditingExpense(expense);
+        setShowEditModal(true);
+    };
+
+    // UPDATED handleSaveExpense FUNCTION - Calls parent's onEditExpense (which is handleUpdateExpense from Home)
+    const handleSaveExpense = async (updatedExpense) => {
+        if (onEditExpense) {
+            const success = await onEditExpense(updatedExpense.id, updatedExpense);
+            if (success) {
+                // Hide the modal only if update was successful
+                setShowEditModal(false);
+                setEditingExpense(null);
+            }
+            // If success is false, modal stays open so user can try again
+        }
+    };
+
+    const handleDeleteExpense = (expenseId, expenseBusiness) => {
+        Alert.alert(
+            'Delete Expense',
+            `Are you sure you want to delete the expense for "${expenseBusiness}"?`,
+            [
+                {
+                    text: 'Cancel',
+                    style: 'cancel',
+                },
+                {
+                    text: 'Delete',
+                    style: 'destructive',
+                    onPress: () => {
+                        if (onDeleteExpense) {
+                            onDeleteExpense(expenseId);
+                        }
+                    },
+                },
+            ]
+        );
+    };
+
     const formatCurrency = (amount) => {
         return `₹${amount.toFixed(2)}`;
     };
@@ -280,34 +334,76 @@ const ExpenseDashboard = ({ expenses = [], isLoading = false, onRefresh, refresh
         const cardStyle = [styles.expenseCard, { borderLeftColor: config.color }];
         const badgeStyle = [styles.categoryBadge, { backgroundColor: config.color }];
 
-        return (
-            <View style={cardStyle}>
-                <View style={styles.cardHeader}>
-                    <View style={styles.amountContainer}>
-                        <Text style={styles.amountText}>{formatCurrency(expense.amount)}</Text>
-                        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                            <View style={badgeStyle}>
-                                <MaterialCommunityIcons
-                                    name={config.icon}
-                                    size={14}
-                                    color="white"
-                                    style={styles.categoryIcon}
-                                />
-                                <Text style={styles.categoryText}>{expense.category}</Text>
-                            </View>
-                            <View>
-                                <Text style={styles.businessText}>{expense.business}</Text>
-                            </View>
-                        </View>
-                    </View>
-                    {/* Show full date string from backend */}
-                    <Text style={styles.dateText}>{formatDate(expense.date) || 'Time not available'}</Text>
-                </View>
+        const handleCardPress = () => {
+            Alert.alert(
+                "Expense Options",
+                `What would you like to do with this ${expense.category} expense?`,
+                [
+                    {
+                        text: "Edit",
+                        onPress: () => handleEditExpense(expense),
+                        style: "default"
+                    },
+                    {
+                        text: "Delete",
+                        onPress: () => {
+                            Alert.alert(
+                                "Confirm Delete",
+                                "Are you sure you want to delete this expense?",
+                                [
+                                    {
+                                        text: "Cancel",
+                                        style: "cancel"
+                                    },
+                                    {
+                                        text: "Delete",
+                                        onPress: () => handleDeleteExpense(expense.id, expense.business),
+                                        style: "destructive"
+                                    }
+                                ]
+                            );
+                        },
+                        style: "destructive"
+                    },
+                    {
+                        text: "Cancel",
+                        style: "cancel"
+                    }
+                ]
+            );
+        };
 
-                <View style={styles.cardBody}>
-                    <Text style={styles.descriptionText}>{expense.description}</Text>
+        return (
+            <TouchableOpacity onPress={handleCardPress} activeOpacity={0.7}>
+                <View style={cardStyle}>
+
+                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 }}>
+                        <Text style={styles.amountText}>
+                            {formatCurrency(expense.amount)}
+                        </Text>
+
+                        <Text style={styles.dateText}>
+                            {formatDate(expense.date) || 'Time not available'}
+                        </Text>
+
+                    </View>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 5 }}>
+                        <View style={badgeStyle}>
+                            <Text style={styles.categoryText}>
+                                {expense.category}
+                            </Text>
+                        </View>
+
+                        <Text style={styles.businessText}>
+                            {expense.business}
+                        </Text>
+                    </View>
+
+                    <Text style={styles.descriptionText}>
+                        {expense.description}
+                    </Text>
                 </View>
-            </View>
+            </TouchableOpacity>
         );
     };
 
@@ -572,7 +668,21 @@ const ExpenseDashboard = ({ expenses = [], isLoading = false, onRefresh, refresh
                 </ScrollView>
 
             )}
+
+            {/* Month Picker Modal */}
             <MonthPickerModal />
+
+            {/* Edit Expense Modal - Now calls parent's handleUpdateExpense */}
+            <EditExpense
+                visible={showEditModal}
+                expense={editingExpense}
+                onClose={() => {
+                    setShowEditModal(false);
+                    setEditingExpense(null);
+                }}
+                onSave={handleSaveExpense}
+                categories={Object.keys(categoryConfig)}
+            />
         </View>
     );
 };
@@ -889,6 +999,7 @@ const styles = StyleSheet.create({
     descriptionText: {
         fontSize: 14,
         color: '#666',
+        marginLeft: 5,
         lineHeight: 20,
     },
     emptyContainer: {
@@ -912,6 +1023,35 @@ const styles = StyleSheet.create({
         fontSize: 14,
         color: '#999',
         textAlign: 'center',
+    },
+    cardActions: {
+        flexDirection: 'row',
+        justifyContent: 'flex-end',
+        alignItems: 'center',
+        marginTop: 10,
+        paddingTop: 10,
+        borderTopWidth: 1,
+        borderTopColor: '#f0f0f0',
+        gap: 10,
+    },
+    actionButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingHorizontal: 12,
+        paddingVertical: 6,
+        borderRadius: 6,
+        gap: 4,
+    },
+    editButton: {
+        backgroundColor: '#4CAF50',
+    },
+    deleteButton: {
+        backgroundColor: '#f44336',
+    },
+    actionButtonText: {
+        color: 'white',
+        fontSize: 12,
+        fontWeight: '600',
     },
 });
 
